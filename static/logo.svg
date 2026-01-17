@@ -1,0 +1,34 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="58" fill="none" stroke="#00AAFF" stroke-width="2"/>
+  
+  <!-- Shield outline -->
+  <path d="M 60 20 L 85 30 L 85 55 Q 85 75 60 95 Q 35 75 35 55 L 35 30 Z" 
+        fill="none" stroke="#00FF41" stroke-width="2.5"/>
+  
+  <!-- Inner shield gradient -->
+  <defs>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00AAFF;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#00FF41;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  <path d="M 60 23 L 82 32 L 82 55 Q 82 73 60 91 Q 38 73 38 55 L 38 32 Z" 
+        fill="url(#shieldGradient)"/>
+  
+  <!-- Lock icon in center -->
+  <rect x="52" y="50" width="16" height="18" rx="2" fill="#00AAFF" opacity="0.8"/>
+  <path d="M 54 50 L 54 45 Q 54 40 60 40 Q 66 40 66 45 L 66 50" 
+        fill="none" stroke="#00FF41" stroke-width="2.5"/>
+  <circle cx="60" cy="59" r="2.5" fill="#00FF41"/>
+  
+  <!-- CTF text at bottom -->
+  <text x="60" y="108" font-family="Arial, sans-serif" font-size="14" 
+        font-weight="bold" fill="#00AAFF" text-anchor="middle">CTF</text>
+  
+  <!-- Decorative corner elements -->
+  <path d="M 20 20 L 30 20 M 20 20 L 20 30" stroke="#00FF41" stroke-width="2" opacity="0.5"/>
+  <path d="M 100 20 L 90 20 M 100 20 L 100 30" stroke="#00FF41" stroke-width="2" opacity="0.5"/>
+  <path d="M 20 100 L 30 100 M 20 100 L 20 90" stroke="#00AAFF" stroke-width="2" opacity="0.5"/>
+  <path d="M 100 100 L 90 100 M 100 100 L 100 90" stroke="#00AAFF" stroke-width="2" opacity="0.5"/>
+</svg>

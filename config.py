@@ -19,7 +19,7 @@ class Config:
     
     # Platform configuration
     PLATFORM_NAME = os.environ.get('PLATFORM_NAME', 'CTF Platform')
-    PLATFORM_LOGO = os.environ.get('PLATFORM_LOGO', 'logo.png')
+    PLATFORM_LOGO = os.environ.get('PLATFORM_LOGO', 'logo.svg')
     FOOTER_TEXT = os.environ.get('FOOTER_TEXT', '100% Written by AI · Made with ♥ by Matt')
     
     # Babel configuration
