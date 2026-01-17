@@ -188,20 +188,31 @@ Dify 工作流需要在 `answer` 字段中返回 JSON 格式的评分结果：
 ```
 
 `answer` 字段中的 JSON 结构：
-- `success` (boolean): 是否成功评估
+- `success` (boolean): 是否成功评估（答案是否正确）
 - `score` (integer): 得分（0-题目总分）
 - `feedback` (string): 评分反馈
-- `auto_approved` (boolean): 是否自动通过（true则自动审核通过并计分）
+- `auto_approved` (boolean): 是否自动审核
+  - `true`: AI 自动审核（根据 `success` 决定通过/拒绝）
+  - `false`: 保持 pending 状态，等待人工审核
 
 #### 自动评分逻辑 / Auto-scoring Logic
 
-- 当 `success=true` 且 `auto_approved=true` 时，系统会自动：
-  - 将提交状态设为 `approved`
-  - 设置得分为 `score` 的值
-  - 记录审核时间
-  - **审核人标记为 "AI"**
-  
-- 其他情况下，提交保持 `pending` 状态，需要管理员人工审核
+当 `auto_approved=true` 时，系统会自动审核：
+
+**答案正确（`success=true`）**：
+- 提交状态：`approved` ✅
+- 得分：Dify 返回的 `score` 值
+- 审核人：`AI`
+
+**答案错误（`success=false`）**：
+- 提交状态：`rejected` ❌
+- 得分：`0`
+- 审核人：`AI`
+
+**需要人工审核（`auto_approved=false`）**：
+- 提交状态：`pending` ⏳
+- 得分：`0`（待审核）
+- 需要管理员在后台手动审核
 
 ### 计分规则 / Scoring Rules
 

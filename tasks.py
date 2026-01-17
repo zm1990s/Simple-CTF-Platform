@@ -89,9 +89,16 @@ def trigger_external_hook(submission_id):
                 answer_data = json.loads(answer_text)
                 
                 # Update submission based on Dify response
-                if answer_data.get('success') and answer_data.get('auto_approved'):
-                    submission.status = 'approved'
-                    submission.points_awarded = answer_data.get('score', 0)
+                # Auto-approve/reject if auto_approved is True
+                if answer_data.get('auto_approved'):
+                    # Determine status based on success flag
+                    if answer_data.get('success'):
+                        submission.status = 'approved'
+                        submission.points_awarded = answer_data.get('score', 0)
+                    else:
+                        submission.status = 'rejected'
+                        submission.points_awarded = 0
+                    
                     submission.reviewed_at = datetime.utcnow()
                     submission.reviewed_by_name = 'AI'  # Mark as AI-reviewed
                     # Note: reviewed_by_id remains None to indicate auto-approval
@@ -101,7 +108,8 @@ def trigger_external_hook(submission_id):
                     return {
                         'success': True,
                         'auto_approved': True,
-                        'score': answer_data.get('score', 0),
+                        'auto_status': submission.status,
+                        'score': submission.points_awarded,
                         'feedback': answer_data.get('feedback', ''),
                         'dify_response': dify_response
                     }
