@@ -34,7 +34,7 @@ def competition_detail(competition_id):
     if competition.status == 'paused' and not current_user.is_admin:
         flash('This competition is currently paused.', 'warning')
         return redirect(url_for('frontend.index'))
-    challenges = Challenge.query.filter_by(competition_id=competition_id, is_active=True).all()
+    challenges = Challenge.query.filter_by(competition_id=competition_id, is_active=True).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
     
     # Get user's submissions for this competition
     user_submissions = {}

@@ -21,17 +21,32 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th style="width: 80px;">{{ _('Order') }}</th>
                         <th>{{ _('Title') }}</th>
                         <th>{{ _('Competition') }}</th>
                         <th>{{ _('Category') }}</th>
                         <th>{{ _('Points') }}</th>
                         <th>{{ _('Status') }}</th>
-                        <th>{{ _('Actions') }}</th>
+                        <th style="width: 280px;">{{ _('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for challenge in challenges %}
                         <tr>
+                            <td>
+                                <div class="btn-group-vertical btn-group-sm" role="group">
+                                    <form method="POST" action="{{ url_for('admin.challenge_move_up', challenge_id=challenge.id) }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ _('Move Up') }}">
+                                            <i class="bi bi-arrow-up"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('admin.challenge_move_down', challenge_id=challenge.id) }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ _('Move Down') }}">
+                                            <i class="bi bi-arrow-down"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                             <td>{{ challenge.title }}</td>
                             <td>{{ challenge.competition.name }}</td>
                             <td>{{ challenge.category or '-' }}</td>
@@ -52,6 +67,9 @@
                                         <i class="bi bi-files"></i>
                                     </button>
                                 </form>
+                                <a href="{{ url_for('admin.challenge_export', challenge_id=challenge.id) }}" class="btn btn-sm btn-success" title="{{ _('Export') }}">
+                                    <i class="bi bi-download"></i>
+                                </a>
                                 <form method="POST" action="{{ url_for('admin.challenge_toggle', challenge_id=challenge.id) }}" style="display:inline;">
                                     <button type="submit" class="btn btn-sm btn-warning" title="{{ _('Toggle Status') }}">
                                         <i class="bi bi-toggle-{{ 'on' if challenge.is_active else 'off' }}"></i>

@@ -78,6 +78,7 @@ class Challenge(db.Model):
     description = db.Column(db.Text, nullable=False)  # Markdown content
     points = db.Column(db.Integer, nullable=False, default=100)
     category = db.Column(db.String(100))
+    order_index = db.Column(db.Integer, default=0)  # Display order (lower numbers first)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

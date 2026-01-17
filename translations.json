@@ -136,8 +136,8 @@
     "zh": "上传图片（可选）"
   },
   "You can upload multiple images": {
-    "en": "You can upload multiple images",
-    "zh": "可以上传多张图片"
+    "en": "You can upload multiple images, up to 10",
+    "zh": "可以上传多张图片，最多 10 张"
   },
   "Submit": {
     "en": "Submit",

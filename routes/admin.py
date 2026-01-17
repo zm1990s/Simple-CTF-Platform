@@ -504,7 +504,7 @@ def competitions_export_all():
 @admin_required
 def challenges():
     """List all challenges"""
-    challenges = Challenge.query.order_by(Challenge.created_at.desc()).all()
+    challenges = Challenge.query.order_by(Challenge.order_index.asc(), Challenge.created_at.desc()).all()
     return render_template('admin/challenges.html', challenges=challenges)
 
 
@@ -600,6 +600,7 @@ def challenge_copy(challenge_id):
         points=original.points,
         category=original.category,
         competition_id=original.competition_id,
+        order_index=original.order_index,
         is_active=False  # Set copied challenges as inactive by default
     )
     
@@ -607,6 +608,52 @@ def challenge_copy(challenge_id):
     db.session.commit()
     
     flash(f'Challenge copied successfully as "{new_title}".', 'success')
+    return redirect(url_for('admin.challenges'))
+
+
+@admin_bp.route('/challenges/<int:challenge_id>/move-up', methods=['POST'])
+@admin_required
+def challenge_move_up(challenge_id):
+    """Move challenge up in display order"""
+    challenge = Challenge.query.get_or_404(challenge_id)
+    
+    # Find previous challenge in same competition
+    prev_challenge = Challenge.query.filter(
+        Challenge.competition_id == challenge.competition_id,
+        Challenge.order_index < challenge.order_index
+    ).order_by(Challenge.order_index.desc()).first()
+    
+    if prev_challenge:
+        # Swap order_index
+        challenge.order_index, prev_challenge.order_index = prev_challenge.order_index, challenge.order_index
+        db.session.commit()
+        flash('Challenge moved up.', 'success')
+    else:
+        flash('Challenge is already at the top.', 'info')
+    
+    return redirect(url_for('admin.challenges'))
+
+
+@admin_bp.route('/challenges/<int:challenge_id>/move-down', methods=['POST'])
+@admin_required
+def challenge_move_down(challenge_id):
+    """Move challenge down in display order"""
+    challenge = Challenge.query.get_or_404(challenge_id)
+    
+    # Find next challenge in same competition
+    next_challenge = Challenge.query.filter(
+        Challenge.competition_id == challenge.competition_id,
+        Challenge.order_index > challenge.order_index
+    ).order_by(Challenge.order_index.asc()).first()
+    
+    if next_challenge:
+        # Swap order_index
+        challenge.order_index, next_challenge.order_index = next_challenge.order_index, challenge.order_index
+        db.session.commit()
+        flash('Challenge moved down.', 'success')
+    else:
+        flash('Challenge is already at the bottom.', 'info')
+    
     return redirect(url_for('admin.challenges'))
 
 
