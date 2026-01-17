@@ -21,7 +21,7 @@
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('frontend.index') }}">
                 {% if config.get('PLATFORM_LOGO') %}
-                <img src="{{ url_for('static', filename=config['PLATFORM_LOGO']) }}" alt="Logo" style="max-height: 40px; margin-right: 10px; transform: scale(0.8);" onerror="this.style.display='none'">
+                <img src="{{ url_for('static', filename=config['PLATFORM_LOGO']) }}" alt="Logo" style="max-height: 30px; margin-right: 5px; transform: scale(0.8); transform-origin: left center;" onerror="this.style.display='none'">
                 {% else %}
                 <i class="bi bi-cpu"></i>
                 {% endif %}
