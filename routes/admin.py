@@ -667,6 +667,7 @@ def submission_review(submission_id):
         submission.status = form.status.data
         submission.reviewed_at = datetime.utcnow()
         submission.reviewed_by_id = current_user.id
+        submission.reviewed_by_name = current_user.username  # Set reviewer name
         
         if form.status.data == 'approved':
             # Award points

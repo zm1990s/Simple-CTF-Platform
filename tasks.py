@@ -93,6 +93,7 @@ def trigger_external_hook(submission_id):
                     submission.status = 'approved'
                     submission.points_awarded = answer_data.get('score', 0)
                     submission.reviewed_at = datetime.utcnow()
+                    submission.reviewed_by_name = 'AI'  # Mark as AI-reviewed
                     # Note: reviewed_by_id remains None to indicate auto-approval
                     
                     db.session.commit()

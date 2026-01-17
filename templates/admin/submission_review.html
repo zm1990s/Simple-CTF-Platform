@@ -96,7 +96,7 @@
                     <h5>{{ _('Review History') }}</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>{{ _('Reviewed By') }}:</strong> {{ submission.reviewer.username if submission.reviewer else '-' }}</p>
+                    <p><strong>{{ _('Reviewed By') }}:</strong> {{ submission.reviewed_by_name or (submission.reviewer.username if submission.reviewer else '-') }}</p>
                     <p><strong>{{ _('Reviewed At') }}:</strong> {{ submission.reviewed_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                     <p><strong>{{ _('Points Awarded') }}:</strong> {{ submission.points_awarded }}</p>
                 </div>

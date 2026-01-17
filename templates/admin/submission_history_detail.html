@@ -62,7 +62,7 @@
                     </tr>
                     <tr>
                         <th>{{ _('Reviewed By') }}</th>
-                        <td>{{ submission.reviewer.username if submission.reviewer else '-' }}</td>
+                        <td>{{ submission.reviewed_by_name or (submission.reviewer.username if submission.reviewer else '-') }}</td>
                     </tr>
                     <tr>
                         <th>{{ _('Archived At') }}</th>

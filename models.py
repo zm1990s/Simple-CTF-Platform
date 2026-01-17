@@ -103,6 +103,7 @@ class Submission(db.Model):
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
     reviewed_at = db.Column(db.DateTime)
     reviewed_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    reviewed_by_name = db.Column(db.String(100))  # Reviewer name (e.g., "AI" for auto-approval)
     
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
