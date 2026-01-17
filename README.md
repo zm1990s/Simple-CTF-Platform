@@ -1,8 +1,45 @@
 # CTF Platform
 
-一个功能完整的Capture The Flag（CTF）竞赛平台，使用Python Flask开发，支持容器化部署。
+一个功能完整的 Capture The Flag（CTF）竞赛平台，使用 Python Flask 开发，支持容器化部署。
+
+支持复杂的答题（文字+图片），通过人工审核来确认分数。
 
 A full-featured Capture The Flag (CTF) competition platform built with Python Flask, supporting containerized deployment.
+
+## 功能截图 / Screenshots
+
+![alt text](img/1.png)
+![alt text](img/2.png)
+![alt text](img/3.png)
+![alt text](img/4.png)
+
+
+## 快速开始 / Quick Start
+
+### 使用 Docker Compose / Using Docker Compose
+
+1. 克隆仓库 / Clone the repository:
+```bash
+git clone <your-repo-url>
+cd CTF
+```
+
+2. 复制环境变量文件 / Copy environment file:
+```bash
+cp .env.example .env
+```
+
+3. 修改 `.env` 文件中的配置（特别是 SECRET_KEY）/ Edit `.env` file (especially SECRET_KEY)
+
+4. 启动服务 / Start services:
+```bash
+./deploy.sh
+```
+
+5. 访问平台 / Access the platform:
+- Frontend: http://localhost:5000
+- Default admin account: admin@ctf.local / admin123
+
 
 ## 主要功能 / Key Features
 
@@ -38,72 +75,8 @@ A full-featured Capture The Flag (CTF) competition platform built with Python Fl
 - **Frontend**: Bootstrap 5, Marked.js (Markdown)
 - **Deployment**: Docker, Kubernetes
 
-## 快速开始 / Quick Start
 
-### 使用 Docker Compose / Using Docker Compose
-
-1. 克隆仓库 / Clone the repository:
-```bash
-git clone <your-repo-url>
-cd CTF
-```
-
-2. 复制环境变量文件 / Copy environment file:
-```bash
-cp .env.example .env
-```
-
-3. 修改 `.env` 文件中的配置（特别是 SECRET_KEY）/ Edit `.env` file (especially SECRET_KEY)
-
-4. 启动服务 / Start services:
-```bash
-docker compose up -d
-```
-
-5. 访问平台 / Access the platform:
-- Frontend: http://localhost:5000
-- Default admin account: admin@ctf.local / admin123
-
-### 本地开发 / Local Development
-
-1. 安装依赖 / Install dependencies:
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-2. 设置环境变量 / Set environment variables:
-```bash
-cp .env.example .env
-# Edit .env file
-```
-
-3. 启动 PostgreSQL 和 Redis / Start PostgreSQL and Redis:
-```bash
-# Using Docker
-docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=ctf_password -e POSTGRES_USER=ctf_user -e POSTGRES_DB=ctf_platform postgres:15-alpine
-docker run -d -p 6379:6379 redis:7-alpine
-```
-
-4. 初始化数据库 / Initialize database:
-```bash
-flask db init
-flask db migrate -m "Initial migration"
-flask db upgrade
-```
-
-5. 启动应用 / Run the application:
-```bash
-python app.py
-```
-
-6. （可选）启动 Celery worker / (Optional) Start Celery worker:
-```bash
-celery -A tasks.celery worker --loglevel=info
-```
-
-### 使用 Kubernetes / Using Kubernetes
+## 使用 Kubernetes / Using Kubernetes
 
 1. 构建 Docker 镜像 / Build Docker image:
 ```bash
@@ -184,17 +157,7 @@ CTF/
 └── uploads/            # 上传文件 / Uploaded files
 ```
 
-## 功能截图 / Screenshots
 
-（待添加 / To be added）
-
-## 安全建议 / Security Recommendations
-
-1. ⚠️ **务必修改默认密钥和密码** / Change default SECRET_KEY and passwords
-2. 🔒 使用HTTPS部署生产环境 / Use HTTPS in production
-3. 🛡️ 限制管理员账户数量 / Limit number of admin accounts
-4. 📝 定期备份数据库 / Regular database backups
-5. 🔐 使用强密码策略 / Use strong password policies
 
 ## 许可证 / License
 
