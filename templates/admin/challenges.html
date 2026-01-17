@@ -198,9 +198,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.add('dragging');
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/html', this.innerHTML);
-                
-                // 显示提示
-                showDragHint('拖动到目标位置后释放');
             });
             
             // 拖拽结束
@@ -209,9 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // 移除所有 drag-over 样式
                 rows.forEach(r => r.classList.remove('drag-over'));
-                
-                // 隐藏提示
-                hideDragHint();
                 
                 // 如果位置有变化，保存新顺序
                 if (draggedOverElement && draggedElement !== draggedOverElement) {
@@ -279,9 +273,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const rows = tbody.querySelectorAll('.draggable-row');
         const challengeIds = Array.from(rows).map(row => parseInt(row.dataset.challengeId));
         
-        // 显示加载提示
-        showDragHint('保存中...');
-        
         fetch('{{ url_for("admin.challenges_reorder") }}', {
             method: 'POST',
             headers: {
@@ -294,16 +285,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showDragHint('✓ 顺序已保存', 'success');
+                showDragHint('✓ Saved', 'success');
                 setTimeout(hideDragHint, 2000);
             } else {
-                showDragHint('✗ 保存失败: ' + data.message, 'error');
+                showDragHint('✗ Error: ' + data.message, 'error');
                 setTimeout(hideDragHint, 3000);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showDragHint('✗ 网络错误', 'error');
+            showDragHint('✗ Network error', 'error');
             setTimeout(hideDragHint, 3000);
         });
     }
