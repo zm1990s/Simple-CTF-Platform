@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('My Submissions') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ _('My Submissions') }}</h1>
+
+{% if submissions %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>{{ _('Challenge') }}</th>
+                    <th>{{ _('Competition') }}</th>
+                    <th>{{ _('Submitted At') }}</th>
+                    <th>{{ _('Status') }}</th>
+                    <th>{{ _('Points') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('frontend.challenge_detail', challenge_id=submission.challenge_id) }}">
+                                {{ submission.challenge.title }}
+                            </a>
+                        </td>
+                        <td>{{ submission.challenge.competition.name }}</td>
+                        <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            {% if submission.status == 'approved' %}
+                                <span class="badge bg-success">{{ _('Approved') }}</span>
+                            {% elif submission.status == 'rejected' %}
+                                <span class="badge bg-danger">{{ _('Rejected') }}</span>
+                            {% else %}
+                                <span class="badge bg-warning">{{ _('Pending') }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ submission.points_awarded }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        {{ _('You have not submitted any answers yet.') }}
+    </div>
+{% endif %}
+{% endblock %}

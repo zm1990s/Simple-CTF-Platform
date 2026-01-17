@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Name') }}</label>
+                {{ form.name(class="form-control") }}
+                {% if form.name.errors %}
+                    <div class="text-danger">
+                        {% for error in form.name.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Description') }}</label>
+                {{ form.description(class="form-control", rows=5) }}
+                {% if form.description.errors %}
+                    <div class="text-danger">
+                        {% for error in form.description.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Countdown (minutes)') }}</label>
+                {{ form.countdown_minutes(class="form-control", type="number", min=0) }}
+                {% if form.countdown_minutes.errors %}
+                    <div class="text-danger">
+                        {% for error in form.countdown_minutes.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                <small class="text-muted">{{ _('Set to 0 for no countdown. Countdown starts when you click Start.') }}</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">{{ _('Save') }}</button>
+            <a href="{{ url_for('admin.competitions') }}" class="btn btn-secondary">{{ _('Cancel') }}</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

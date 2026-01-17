@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Make deploy script executable
+chmod +x deploy.sh
+
+echo "CTF Platform - Quick Setup"
+echo "==========================="
+echo ""
+echo "1. Install Python dependencies:"
+echo "   pip install -r requirements.txt"
+echo ""
+echo "2. Setup environment:"
+echo "   cp .env.example .env"
+echo "   # Edit .env and update SECRET_KEY"
+echo ""
+echo "3. Option A - Run with Docker:"
+echo "   ./deploy.sh"
+echo ""
+echo "3. Option B - Run locally:"
+echo "   # Start PostgreSQL and Redis"
+echo "   docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=ctf_password -e POSTGRES_USER=ctf_user -e POSTGRES_DB=ctf_platform postgres:15-alpine"
+echo "   docker run -d -p 6379:6379 redis:7-alpine"
+echo "   "
+echo "   # Initialize database"
+echo "   python init_db.py"
+echo "   "
+echo "   # Start application"
+echo "   python app.py"
+echo ""
+echo "4. Access the platform at http://localhost:5000"
+echo "   Default admin: admin@ctf.local / admin123"
+echo ""

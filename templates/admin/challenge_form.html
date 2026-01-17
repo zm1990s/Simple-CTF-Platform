@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Title') }}</label>
+                {{ form.title(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Competition') }}</label>
+                {{ form.competition_id(class="form-select") }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Category') }}</label>
+                {{ form.category(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Points') }}</label>
+                {{ form.points(class="form-control", type="number") }}
+            </div>
+            
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ _('Description (Markdown)') }}</label>
+                        {{ form.description(class="form-control", rows=15, id="markdown-editor") }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">{{ _('Preview') }}</label>
+                        <div id="markdown-preview" class="markdown-preview"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Upload Image for Markdown') }}</label>
+                <input type="file" id="image-upload" class="form-control" accept="image/*">
+                <small class="text-muted">{{ _('Upload an image and click to insert into markdown') }}</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">{{ _('Save') }}</button>
+            <a href="{{ url_for('admin.challenges') }}" class="btn btn-secondary">{{ _('Cancel') }}</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const editor = document.getElementById('markdown-editor');
+    const preview = document.getElementById('markdown-preview');
+    const imageUpload = document.getElementById('image-upload');
+    
+    // Update preview on input
+    editor.addEventListener('input', function() {
+        preview.innerHTML = marked.parse(editor.value);
+    });
+    
+    // Initial preview
+    preview.innerHTML = marked.parse(editor.value);
+    
+    // Image upload
+    imageUpload.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        fetch('{{ url_for("admin.upload_image") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.url) {
+                const imageMarkdown = `\n![${file.name}](${data.url})\n`;
+                const cursorPos = editor.selectionStart;
+                const textBefore = editor.value.substring(0, cursorPos);
+                const textAfter = editor.value.substring(cursorPos);
+                
+                editor.value = textBefore + imageMarkdown + textAfter;
+                editor.dispatchEvent(new Event('input'));
+                
+                alert('{{ _("Image inserted into markdown!") }}');
+            } else {
+                alert('{{ _("Failed to upload image") }}');
+            }
+        })
+        .catch(error => {
+            alert('{{ _("Error uploading image") }}: ' + error);
+        });
+    });
+</script>
+{% endblock %}

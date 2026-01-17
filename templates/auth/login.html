@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Login') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card" style="border: 2px solid var(--cyber-primary); box-shadow: 0 8px 40px rgba(0, 255, 65, 0.3);">
+            <div class="card-header text-center" style="background: linear-gradient(135deg, rgba(0, 255, 65, 0.2), rgba(0, 170, 255, 0.2)); border-bottom: 2px solid var(--cyber-primary);">
+                <h3 class="mb-0" style="color: var(--cyber-primary); text-transform: uppercase; letter-spacing: 3px; font-weight: 700;">
+                    <i class="bi bi-shield-lock-fill"></i> {{ _('Login') }}
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 2rem;">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-4">
+                        <label class="form-label">{{ _('Email') }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: rgba(0, 255, 65, 0.1); border-color: rgba(0, 255, 65, 0.3); color: var(--cyber-primary);">
+                                <i class="bi bi-envelope-fill"></i>
+                            </span>
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="user@example.com") }}
+                        </div>
+                        {% if form.email.errors %}
+                            <div class="text-danger mt-2">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.email.errors[0] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">{{ _('Password') }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: rgba(0, 255, 65, 0.1); border-color: rgba(0, 255, 65, 0.3); color: var(--cyber-primary);">
+                                <i class="bi bi-key-fill"></i>
+                            </span>
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••") }}
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="text-danger mt-2">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.password.errors[0] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4 form-check">
+                        {{ form.remember(class="form-check-input", style="border-color: var(--cyber-primary);") }}
+                        <label class="form-check-label" style="color: #b0b0b0;">{{ _('Remember Me') }}</label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> {{ _('Login') }}
+                        </button>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary" style="border-color: var(--cyber-secondary); color: var(--cyber-secondary);">
+                            <i class="bi bi-person-plus"></i> {{ _('Register') }}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

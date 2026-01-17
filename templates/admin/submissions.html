@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Review Submissions') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ _('Review Submissions') }}</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Back to Dashboard') }}
+    </a>
+</div>
+
+<div class="mb-3">
+    <div class="btn-group" role="group">
+        <a href="{{ url_for('admin.submissions', status='pending') }}" class="btn btn-{{ 'primary' if status_filter == 'pending' else 'outline-primary' }}">
+            {{ _('Pending') }}
+        </a>
+        <a href="{{ url_for('admin.submissions', status='approved') }}" class="btn btn-{{ 'success' if status_filter == 'approved' else 'outline-success' }}">
+            {{ _('Approved') }}
+        </a>
+        <a href="{{ url_for('admin.submissions', status='rejected') }}" class="btn btn-{{ 'danger' if status_filter == 'rejected' else 'outline-danger' }}">
+            {{ _('Rejected') }}
+        </a>
+        <a href="{{ url_for('admin.submissions', status='all') }}" class="btn btn-{{ 'secondary' if status_filter == 'all' else 'outline-secondary' }}">
+            {{ _('All') }}
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if submissions %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>{{ _('User') }}</th>
+                            <th>{{ _('Challenge') }}</th>
+                            <th>{{ _('Submitted At') }}</th>
+                            <th>{{ _('Status') }}</th>
+                            <th>{{ _('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                            <tr>
+                                <td>{{ submission.user.username }}</td>
+                                <td>{{ submission.challenge.title }}</td>
+                                <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    {% if submission.status == 'approved' %}
+                                        <span class="badge bg-success">{{ _('Approved') }}</span>
+                                    {% elif submission.status == 'rejected' %}
+                                        <span class="badge bg-danger">{{ _('Rejected') }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ _('Pending') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.submission_review', submission_id=submission.id) }}" class="btn btn-sm btn-primary">
+                                        {{ _('Review') }}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                {{ _('No submissions found.') }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Submission History') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 style="color: var(--primary-color);">
+        <i class="bi bi-archive"></i> {{ _('Submission History') }}
+    </h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Back to Dashboard') }}
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">{{ _('Filter by Competition') }}</label>
+                <select name="competition_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">{{ _('All Competitions') }}</option>
+                    {% for comp in competitions %}
+                        <option value="{{ comp.id }}" {% if selected_competition == comp.id %}selected{% endif %}>
+                            {{ comp.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-clock-history"></i> {{ _('Archived Submissions') }}
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if history %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>{{ _('ID') }}</th>
+                            <th>{{ _('Competition') }}</th>
+                            <th>{{ _('Challenge') }}</th>
+                            <th>{{ _('User') }}</th>
+                            <th>{{ _('Status') }}</th>
+                            <th>{{ _('Points') }}</th>
+                            <th>{{ _('Submitted') }}</th>
+                            <th>{{ _('Archived') }}</th>
+                            <th>{{ _('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                            <tr>
+                                <td>{{ item.original_submission_id }}</td>
+                                <td>{{ item.competition.name }}</td>
+                                <td>{{ item.challenge.title }}</td>
+                                <td>{{ item.user.username }}</td>
+                                <td>
+                                    {% if item.status == 'approved' %}
+                                        <span class="badge bg-success">{{ _('Approved') }}</span>
+                                    {% elif item.status == 'rejected' %}
+                                        <span class="badge bg-danger">{{ _('Rejected') }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">{{ _('Pending') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.points_awarded }}</td>
+                                <td>{{ item.submitted_at.strftime('%Y-%m-%d %H:%M') if item.submitted_at else '-' }}</td>
+                                <td>{{ item.archived_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin.submission_history_detail', history_id=item.id) }}" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i> {{ _('View') }}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <i class="bi bi-inbox"></i> {{ _('No archived submissions found.') }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,674 @@
+{
+  "Login": {
+    "en": "Login",
+    "zh": "登录"
+  },
+  "Logout": {
+    "en": "Logout",
+    "zh": "退出"
+  },
+  "Register": {
+    "en": "Register",
+    "zh": "注册"
+  },
+  "Username": {
+    "en": "Username",
+    "zh": "用户名"
+  },
+  "Email": {
+    "en": "Email",
+    "zh": "邮箱"
+  },
+  "Password": {
+    "en": "Password",
+    "zh": "密码"
+  },
+  "Confirm Password": {
+    "en": "Confirm Password",
+    "zh": "确认密码"
+  },
+  "Remember Me": {
+    "en": "Remember Me",
+    "zh": "记住我"
+  },
+  "Competitions": {
+    "en": "Competitions",
+    "zh": "竞赛"
+  },
+  "Challenges": {
+    "en": "Challenges",
+    "zh": "题目"
+  },
+  "Leaderboard": {
+    "en": "Leaderboard",
+    "zh": "排行榜"
+  },
+  "My Submissions": {
+    "en": "My Submissions",
+    "zh": "我的提交"
+  },
+  "Admin": {
+    "en": "Admin",
+    "zh": "管理后台"
+  },
+  "Language": {
+    "en": "Language",
+    "zh": "语言"
+  },
+  "CTF Platform": {
+    "en": "CTF Platform",
+    "zh": "CTF平台"
+  },
+  "Powered by Flask": {
+    "en": "Powered by Flask",
+    "zh": "基于Flask开发"
+  },
+  "Active Competitions": {
+    "en": "Active Competitions",
+    "zh": "进行中的竞赛"
+  },
+  "Running": {
+    "en": "Running",
+    "zh": "进行中"
+  },
+  "Not Active": {
+    "en": "Not Active",
+    "zh": "未开始"
+  },
+  "View Challenges": {
+    "en": "View Challenges",
+    "zh": "查看题目"
+  },
+  "Login to Participate": {
+    "en": "Login to Participate",
+    "zh": "登录参与"
+  },
+  "No active competitions at the moment.": {
+    "en": "No active competitions at the moment.",
+    "zh": "暂无进行中的竞赛。"
+  },
+  "Competition Period": {
+    "en": "Competition Period",
+    "zh": "竞赛时间"
+  },
+  "Description": {
+    "en": "Description",
+    "zh": "描述"
+  },
+  "Category": {
+    "en": "Category",
+    "zh": "分类"
+  },
+  "points": {
+    "en": "points",
+    "zh": "分"
+  },
+  "Solved": {
+    "en": "Solved",
+    "zh": "已解决"
+  },
+  "Rejected": {
+    "en": "Rejected",
+    "zh": "已拒绝"
+  },
+  "Pending Review": {
+    "en": "Pending Review",
+    "zh": "待审核"
+  },
+  "View Challenge": {
+    "en": "View Challenge",
+    "zh": "查看题目"
+  },
+  "No challenges available for this competition.": {
+    "en": "No challenges available for this competition.",
+    "zh": "此竞赛暂无题目。"
+  },
+  "Submit Answer": {
+    "en": "Submit Answer",
+    "zh": "提交答案"
+  },
+  "Answer": {
+    "en": "Answer",
+    "zh": "答案"
+  },
+  "Upload Images (optional)": {
+    "en": "Upload Images (optional)",
+    "zh": "上传图片（可选）"
+  },
+  "You can upload multiple images": {
+    "en": "You can upload multiple images",
+    "zh": "可以上传多张图片"
+  },
+  "Submit": {
+    "en": "Submit",
+    "zh": "提交"
+  },
+  "Your Submissions": {
+    "en": "Your Submissions",
+    "zh": "您的提交记录"
+  },
+  "Submitted At": {
+    "en": "Submitted At",
+    "zh": "提交时间"
+  },
+  "Status": {
+    "en": "Status",
+    "zh": "状态"
+  },
+  "Points": {
+    "en": "Points",
+    "zh": "分数"
+  },
+  "Approved": {
+    "en": "Approved",
+    "zh": "已通过"
+  },
+  "Pending": {
+    "en": "Pending",
+    "zh": "待审核"
+  },
+  "Rank": {
+    "en": "Rank",
+    "zh": "排名"
+  },
+  "Total Points": {
+    "en": "Total Points",
+    "zh": "总分"
+  },
+  "Last Solve": {
+    "en": "Last Solve",
+    "zh": "最后解题时间"
+  },
+  "No submissions yet.": {
+    "en": "No submissions yet.",
+    "zh": "暂无提交记录。"
+  },
+  "Back to Competition": {
+    "en": "Back to Competition",
+    "zh": "返回竞赛"
+  },
+  "You have not submitted any answers yet.": {
+    "en": "You have not submitted any answers yet.",
+    "zh": "您还没有提交任何答案。"
+  },
+  "Admin Dashboard": {
+    "en": "Admin Dashboard",
+    "zh": "管理后台"
+  },
+  "Users": {
+    "en": "Users",
+    "zh": "用户"
+  },
+  "Pending Reviews": {
+    "en": "Pending Reviews",
+    "zh": "待审核"
+  },
+  "Platform Settings": {
+    "en": "Platform Settings",
+    "zh": "平台设置"
+  },
+  "Manage Users": {
+    "en": "Manage Users",
+    "zh": "用户管理"
+  },
+  "Manage Competitions": {
+    "en": "Manage Competitions",
+    "zh": "竞赛管理"
+  },
+  "Manage Challenges": {
+    "en": "Manage Challenges",
+    "zh": "题目管理"
+  },
+  "Review Submissions": {
+    "en": "Review Submissions",
+    "zh": "审核提交"
+  },
+  "New Competition": {
+    "en": "New Competition",
+    "zh": "新建竞赛"
+  },
+  "New Challenge": {
+    "en": "New Challenge",
+    "zh": "新建题目"
+  },
+  "Name": {
+    "en": "Name",
+    "zh": "名称"
+  },
+  "Title": {
+    "en": "Title",
+    "zh": "标题"
+  },
+  "Start Time": {
+    "en": "Start Time",
+    "zh": "开始时间"
+  },
+  "End Time": {
+    "en": "End Time",
+    "zh": "结束时间"
+  },
+  "Active": {
+    "en": "Active",
+    "zh": "激活"
+  },
+  "Inactive": {
+    "en": "Inactive",
+    "zh": "未激活"
+  },
+  "Actions": {
+    "en": "Actions",
+    "zh": "操作"
+  },
+  "Save": {
+    "en": "Save",
+    "zh": "保存"
+  },
+  "Cancel": {
+    "en": "Cancel",
+    "zh": "取消"
+  },
+  "Are you sure?": {
+    "en": "Are you sure?",
+    "zh": "确定吗？"
+  },
+  "Preview": {
+    "en": "Preview",
+    "zh": "预览"
+  },
+  "Upload Image for Markdown": {
+    "en": "Upload Image for Markdown",
+    "zh": "上传图片到Markdown"
+  },
+  "Upload an image and click to insert into markdown": {
+    "en": "Upload an image and click to insert into markdown",
+    "zh": "上传图片并点击插入到Markdown中"
+  },
+  "Image inserted into markdown!": {
+    "en": "Image inserted into markdown!",
+    "zh": "图片已插入到Markdown中！"
+  },
+  "Failed to upload image": {
+    "en": "Failed to upload image",
+    "zh": "图片上传失败"
+  },
+  "Error uploading image": {
+    "en": "Error uploading image",
+    "zh": "图片上传错误"
+  },
+  "Competition": {
+    "en": "Competition",
+    "zh": "竞赛"
+  },
+  "Challenge": {
+    "en": "Challenge",
+    "zh": "题目"
+  },
+  "User": {
+    "en": "User",
+    "zh": "用户"
+  },
+  "Review": {
+    "en": "Review",
+    "zh": "审核"
+  },
+  "No submissions found.": {
+    "en": "No submissions found.",
+    "zh": "未找到提交记录。"
+  },
+  "Submission Details": {
+    "en": "Submission Details",
+    "zh": "提交详情"
+  },
+  "Challenge Points": {
+    "en": "Challenge Points",
+    "zh": "题目分数"
+  },
+  "Answer Text": {
+    "en": "Answer Text",
+    "zh": "文本答案"
+  },
+  "No text answer provided.": {
+    "en": "No text answer provided.",
+    "zh": "未提供文本答案。"
+  },
+  "Uploaded Files": {
+    "en": "Uploaded Files",
+    "zh": "上传的文件"
+  },
+  "Challenge Description": {
+    "en": "Challenge Description",
+    "zh": "题目描述"
+  },
+  "Submit Review": {
+    "en": "Submit Review",
+    "zh": "提交审核"
+  },
+  "Back to Submissions": {
+    "en": "Back to Submissions",
+    "zh": "返回提交列表"
+  },
+  "Review History": {
+    "en": "Review History",
+    "zh": "审核历史"
+  },
+  "Reviewed By": {
+    "en": "Reviewed By",
+    "zh": "审核人"
+  },
+  "Reviewed At": {
+    "en": "Reviewed At",
+    "zh": "审核时间"
+  },
+  "Points Awarded": {
+    "en": "Points Awarded",
+    "zh": "获得分数"
+  },
+  "Default points:": {
+    "en": "Default points:",
+    "zh": "默认分数："
+  },
+  "Registered": {
+    "en": "Registered",
+    "zh": "注册时间"
+  },
+  "Grant Admin": {
+    "en": "Grant Admin",
+    "zh": "授予管理员"
+  },
+  "Revoke Admin": {
+    "en": "Revoke Admin",
+    "zh": "撤销管理员"
+  },
+  "Platform Name": {
+    "en": "Platform Name",
+    "zh": "平台名称"
+  },
+  "Platform Logo": {
+    "en": "Platform Logo",
+    "zh": "平台Logo"
+  },
+  "Upload a new logo (leave empty to keep current)": {
+    "en": "Upload a new logo (leave empty to keep current)",
+    "zh": "上传新Logo（留空保持当前）"
+  },
+  "Save Settings": {
+    "en": "Save Settings",
+    "zh": "保存设置"
+  },
+  "All": {
+    "en": "All",
+    "zh": "全部"
+  },
+  "Paused": {
+    "en": "Paused",
+    "zh": "已暂停"
+  },
+  "Pause": {
+    "en": "Pause",
+    "zh": "暂停"
+  },
+  "Resume": {
+    "en": "Resume",
+    "zh": "恢复"
+  },
+  "Edit": {
+    "en": "Edit",
+    "zh": "编辑"
+  },
+  "Delete": {
+    "en": "Delete",
+    "zh": "删除"
+  },
+  "Activate": {
+    "en": "Activate",
+    "zh": "激活"
+  },
+  "Deactivate": {
+    "en": "Deactivate",
+    "zh": "停用"
+  },
+  "Change Password": {
+    "en": "Change Password",
+    "zh": "修改密码"
+  },
+  "Current Password": {
+    "en": "Current Password",
+    "zh": "当前密码"
+  },
+  "Current": {
+    "en": "Current",
+    "zh": "当前"
+  },
+  "New Password": {
+    "en": "New Password",
+    "zh": "新密码"
+  },
+  "Confirm New Password": {
+    "en": "Confirm New Password",
+    "zh": "确认新密码"
+  },
+  "Minimum 6 characters": {
+    "en": "Minimum 6 characters",
+    "zh": "至少6个字符"
+  },
+  "Reset Password": {
+    "en": "Reset Password",
+    "zh": "重置密码"
+  },
+  "Reset Password for": {
+    "en": "Reset Password for",
+    "zh": "重置密码 -"
+  },
+  "You are about to reset the password for user": {
+    "en": "You are about to reset the password for user",
+    "zh": "您即将重置用户密码"
+  },
+  "Draft": {
+    "en": "Draft",
+    "zh": "草稿"
+  },
+  "Stopped": {
+    "en": "Stopped",
+    "zh": "已停止"
+  },
+  "Start": {
+    "en": "Start",
+    "zh": "开始"
+  },
+  "Stop": {
+    "en": "Stop",
+    "zh": "停止"
+  },
+  "Countdown (minutes)": {
+    "en": "Countdown (minutes)",
+    "zh": "倒计时（分钟）"
+  },
+  "Set to 0 for no countdown. Countdown starts when you click Start.": {
+    "en": "Set to 0 for no countdown. Countdown starts when you click Start.",
+    "zh": "设置为0表示无倒计时。点击开始后倒计时开始计时。"
+  },
+  "minutes": {
+    "en": "minutes",
+    "zh": "分钟"
+  },
+  "No countdown": {
+    "en": "No countdown",
+    "zh": "无倒计时"
+  },
+  "Countdown": {
+    "en": "Countdown",
+    "zh": "倒计时"
+  },
+  "remaining": {
+    "en": "remaining",
+    "zh": "剩余"
+  },
+  "Time Remaining": {
+    "en": "Time Remaining",
+    "zh": "剩余时间"
+  },
+  "Submission History": {
+    "en": "Submission History",
+    "zh": "提交历史"
+  },
+  "Archived Submissions": {
+    "en": "Archived Submissions",
+    "zh": "归档提交记录"
+  },
+  "Archived": {
+    "en": "Archived",
+    "zh": "归档时间"
+  },
+  "Archived Submission Detail": {
+    "en": "Archived Submission Detail",
+    "zh": "归档提交详情"
+  },
+  "Original ID": {
+    "en": "Original ID",
+    "zh": "原始ID"
+  },
+  "Back to History": {
+    "en": "Back to History",
+    "zh": "返回历史记录"
+  },
+  "No archived submissions found.": {
+    "en": "No archived submissions found.",
+    "zh": "未找到归档的提交记录。"
+  },
+  "Filter by Competition": {
+    "en": "Filter by Competition",
+    "zh": "按竞赛筛选"
+  },
+  "All Competitions": {
+    "en": "All Competitions",
+    "zh": "全部竞赛"
+  },
+  "Submitted Files": {
+    "en": "Submitted Files",
+    "zh": "提交的文件"
+  },
+  "Uploaded": {
+    "en": "Uploaded",
+    "zh": "上传时间"
+  },
+  "Back to Dashboard": {
+    "en": "Back to Dashboard",
+    "zh": "返回控制台"
+  },
+  "Export": {
+    "en": "Export",
+    "zh": "导出"
+  },
+  "Import": {
+    "en": "Import",
+    "zh": "导入"
+  },
+  "Export All": {
+    "en": "Export All",
+    "zh": "导出全部"
+  },
+  "Import Competition": {
+    "en": "Import Competition",
+    "zh": "导入竞赛"
+  },
+  "Select JSON File": {
+    "en": "Select JSON File",
+    "zh": "选择 JSON 文件"
+  },
+  "Upload a competition export file (.json)": {
+    "en": "Upload a competition export file (.json)",
+    "zh": "上传竞赛导出文件 (.json)"
+  },
+  "Import Information": {
+    "en": "Import Information",
+    "zh": "导入说明"
+  },
+  "The competition will be created in draft status": {
+    "en": "The competition will be created in draft status",
+    "zh": "竞赛将以草稿状态创建"
+  },
+  "All challenges from the export will be imported": {
+    "en": "All challenges from the export will be imported",
+    "zh": "导出文件中的所有题目都将被导入"
+  },
+  "Challenge files are not included in basic JSON exports": {
+    "en": "Challenge files are not included in basic JSON exports",
+    "zh": "基本 JSON 导出不包含题目文件"
+  },
+  "Copy": {
+    "en": "Copy",
+    "zh": "复制"
+  },
+  "Copy Description": {
+    "en": "Copy Description",
+    "zh": "复制题目描述"
+  },
+  "Copied!": {
+    "en": "Copied!",
+    "zh": "已复制！"
+  },
+  "Failed to copy to clipboard": {
+    "en": "Failed to copy to clipboard",
+    "zh": "复制到剪贴板失败"
+  },
+  "Description (Markdown)": {
+    "en": "Description (Markdown)",
+    "zh": "描述 (Markdown格式)"
+  },
+  "Upload Images (multiple)": {
+    "en": "Upload Images (multiple)",
+    "zh": "上传图片（多张）"
+  },
+  "Points Awarded": {
+    "en": "Points Awarded",
+    "zh": "获得分数"
+  },
+  "Platform Name": {
+    "en": "Platform Name",
+    "zh": "平台名称"
+  },
+  "Platform Logo": {
+    "en": "Platform Logo",
+    "zh": "平台Logo"
+  },
+  "Footer Text": {
+    "en": "Footer Text",
+    "zh": "页脚文本"
+  },
+  "New Competition": {
+    "en": "New Competition",
+    "zh": "新建竞赛"
+  },
+  "Edit Competition": {
+    "en": "Edit Competition",
+    "zh": "编辑竞赛"
+  },
+  "New Challenge": {
+    "en": "New Challenge",
+    "zh": "新建题目"
+  },
+  "Edit Challenge": {
+    "en": "Edit Challenge",
+    "zh": "编辑题目"
+  },
+  "Quick Actions": {
+    "en": "Quick Actions",
+    "zh": "快速操作"
+  },
+  "Toggle Status": {
+    "en": "Toggle Status",
+    "zh": "切换状态"
+  },
+  "The competition countdown has expired. Submissions are no longer accepted.": {
+    "en": "The competition countdown has expired. Submissions are no longer accepted.",
+    "zh": "竞赛倒计时已结束，不再接受提交。"
+  },
+  "Click Start to begin countdown": {
+    "en": "Click Start to begin countdown",
+    "zh": "点击开始以启动倒计时"
+  },
+  "Countdown will start when competition begins": {
+    "en": "Countdown will start when competition begins",
+    "zh": "倒计时将在竞赛开始时启动"
+  }
+}

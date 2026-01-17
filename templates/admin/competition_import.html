@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Import Competition') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-upload"></i> {{ _('Import Competition') }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">{{ _('Select JSON File') }}</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".json" required>
+                            <div class="form-text">{{ _('Upload a competition export file (.json)') }}</div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="bi bi-info-circle"></i> {{ _('Import Information') }}</h6>
+                            <ul class="mb-0">
+                                <li>{{ _('The competition will be created in draft status') }}</li>
+                                <li>{{ _('All challenges from the export will be imported') }}</li>
+                                <li>{{ _('Challenge files are not included in basic JSON exports') }}</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.competitions') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> {{ _('Back') }}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-upload"></i> {{ _('Import') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

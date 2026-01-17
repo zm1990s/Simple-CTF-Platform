@@ -1,0 +1,286 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ctf-platform
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ctf-config
+  namespace: ctf-platform
+data:
+  FLASK_APP: "app.py"
+  FLASK_ENV: "production"
+  DATABASE_URL: "postgresql://ctf_user:ctf_password@postgres:5432/ctf_platform"
+  REDIS_URL: "redis://redis:6379/0"
+  PLATFORM_NAME: "CTF Platform"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ctf-secrets
+  namespace: ctf-platform
+type: Opaque
+stringData:
+  SECRET_KEY: "change-this-secret-key-in-production"
+  ADMIN_EMAIL: "admin@ctf.local"
+  ADMIN_PASSWORD: "admin123"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: ctf-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uploads-pvc
+  namespace: ctf-platform
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: ctf-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: POSTGRES_USER
+          value: "ctf_user"
+        - name: POSTGRES_PASSWORD
+          value: "ctf_password"
+        - name: POSTGRES_DB
+          value: "ctf_platform"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: ctf-platform
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: ctf-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: ctf-platform
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctf-web
+  namespace: ctf-platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ctf-web
+  template:
+    metadata:
+      labels:
+        app: ctf-web
+    spec:
+      initContainers:
+      - name: db-migration
+        image: your-registry/ctf-platform:latest
+        command: ["flask", "db", "upgrade"]
+        envFrom:
+        - configMapRef:
+            name: ctf-config
+        env:
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ctf-secrets
+              key: SECRET_KEY
+      containers:
+      - name: web
+        image: your-registry/ctf-platform:latest
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: ctf-config
+        env:
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ctf-secrets
+              key: SECRET_KEY
+        - name: ADMIN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: ctf-secrets
+              key: ADMIN_EMAIL
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ctf-secrets
+              key: ADMIN_PASSWORD
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctf-web
+  namespace: ctf-platform
+spec:
+  selector:
+    app: ctf-web
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: ctf-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+      - name: celery
+        image: your-registry/ctf-platform:latest
+        command: ["celery", "-A", "tasks.celery", "worker", "--loglevel=info"]
+        envFrom:
+        - configMapRef:
+            name: ctf-config
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ctf-web-hpa
+  namespace: ctf-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ctf-web
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}{{ challenge.title }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('frontend.index') }}">{{ _('Competitions') }}</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('frontend.competition_detail', competition_id=competition.id) }}">{{ competition.name }}</a></li>
+        <li class="breadcrumb-item active">{{ challenge.title }}</li>
+    </ol>
+</nav>
+
+<div class="card mb-4" style="border: 2px solid rgba(0, 170, 255, 0.3);">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, rgba(0, 170, 255, 0.2), rgba(0, 255, 65, 0.1));">
+        <span style="font-weight: 700; color: var(--cyber-secondary);">
+            <i class="bi bi-flag-fill"></i> {{ challenge.title }}
+        </span>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyDescription()" title="{{ _('Copy Description') }}">
+                <i class="bi bi-clipboard"></i> {{ _('Copy') }}
+            </button>
+            <span class="badge bg-info" style="font-size: 1rem; padding: 0.5rem 0.8rem;">
+                {{ challenge.points }} pts
+            </span>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if challenge.category %}
+            <p class="text-muted"><strong>{{ _('Category') }}:</strong> {{ challenge.category }}</p>
+        {% endif %}
+        
+        <div class="markdown-content">
+            <div id="challenge-description"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">{{ _('Submit Answer') }}</h4>
+    </div>
+    <div class="card-body">
+        {% set remaining_time = competition.get_remaining_time() %}
+        {% if remaining_time is not none and remaining_time <= 0 %}
+            <div class="alert alert-warning">
+                <i class="bi bi-clock-history"></i> {{ _('The competition countdown has expired. Submissions are no longer accepted.') }}
+            </div>
+        {% else %}
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    <label class="form-label">{{ _('Answer') }}</label>
+                    {{ form.answer_text(class="form-control", rows=5) }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">{{ _('Upload Images (optional)') }}</label>
+                    <input type="file" name="files" class="form-control" multiple accept="image/*">
+                    <small class="text-muted">{{ _('You can upload multiple images') }}</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">{{ _('Submit') }}</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if submissions %}
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">{{ _('Your Submissions') }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Submitted At') }}</th>
+                            <th>{{ _('Status') }}</th>
+                            <th>{{ _('Points') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                            <tr>
+                                <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    {% if submission.status == 'approved' %}
+                                        <span class="badge bg-success">{{ _('Approved') }}</span>
+                                    {% elif submission.status == 'rejected' %}
+                                        <span class="badge bg-danger">{{ _('Rejected') }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ _('Pending') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ submission.points_awarded }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Render markdown
+    const description = {{ challenge.description|tojson }};
+    document.getElementById('challenge-description').innerHTML = marked.parse(description);
+    
+    // Copy description function
+    function copyDescription() {
+        const descriptionElement = document.getElementById('challenge-description');
+        const textToCopy = descriptionElement.innerText;
+        
+        // Try modern clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                showCopySuccess();
+            }).catch(function(err) {
+                // Fallback to older method
+                fallbackCopy(textToCopy);
+            });
+        } else {
+            // Use fallback method
+            fallbackCopy(textToCopy);
+        }
+    }
+    
+    // Fallback copy method for older browsers or non-HTTPS
+    function fallbackCopy(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showCopySuccess();
+            } else {
+                showCopyError();
+            }
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+            showCopyError();
+        }
+        
+        document.body.removeChild(textArea);
+    }
+    
+    // Show success feedback
+    function showCopySuccess() {
+        const copyBtn = document.querySelector('.copy-btn');
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="bi bi-check-circle"></i> {{ _('Copied!') }}';
+        copyBtn.classList.add('btn-success');
+        copyBtn.classList.remove('btn-outline-secondary');
+        
+        setTimeout(function() {
+            copyBtn.innerHTML = originalHTML;
+            copyBtn.classList.remove('btn-success');
+            copyBtn.classList.add('btn-outline-secondary');
+        }, 2000);
+    }
+    
+    // Show error feedback
+    function showCopyError() {
+        alert('{{ _('Failed to copy to clipboard') }}');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Platform Settings') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ _('Platform Settings') }}</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Back to Dashboard') }}
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Platform Name') }}</label>
+                {{ form.platform_name(class="form-control") }}
+                {% if current_platform_name %}
+                <small class="text-muted">{{ _('Current') }}: {{ current_platform_name }}</small>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Platform Logo') }}</label>
+                {{ form.platform_logo(class="form-control") }}
+                <small class="text-muted">{{ _('Upload a new logo (leave empty to keep current)') }}</small>
+                {% if current_logo %}
+                <div class="mt-2">
+                    <img src="{{ url_for('static', filename=current_logo) }}" alt="Current Logo" style="max-height: 50px;">
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Footer Text') }}</label>
+                {{ form.footer_text(class="form-control") }}
+                {% if current_footer_text %}
+                <small class="text-muted">{{ _('Current') }}: {{ current_footer_text }}</small>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-primary">{{ _('Save Settings') }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

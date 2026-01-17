@@ -1,0 +1,29 @@
+# Logo Placeholder
+
+This is a placeholder file. 
+
+To add your custom logo:
+1. Replace this file with your logo image
+2. Supported formats: PNG, JPG, GIF
+3. Recommended size: 200x200 pixels or similar aspect ratio
+4. The logo will be displayed in the navigation bar (height: 40px)
+
+Or upload via Admin Panel:
+- Login as admin
+- Go to Admin → Platform Settings
+- Upload your logo there
+
+---
+
+这是一个占位文件。
+
+添加自定义Logo：
+1. 用您的Logo图片替换此文件
+2. 支持格式：PNG、JPG、GIF
+3. 推荐尺寸：200x200像素或类似宽高比
+4. Logo将在导航栏中显示（高度：40px）
+
+或通过管理后台上传：
+- 以管理员身份登录
+- 进入 管理后台 → 平台设置
+- 在那里上传您的Logo
