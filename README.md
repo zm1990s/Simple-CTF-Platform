@@ -74,6 +74,7 @@ UPLOAD_URL_PREFIX=http://your-public-ip:5000/uploads
 - ✅ 多竞赛管理 / Multiple competition management
 - ✅ 题目分类和积分 / Challenge categories and points
 - ✅ 动态排行榜（自动刷新）/ Dynamic leaderboard (auto-refresh)
+- ✅ 智能计分：每题只计最高分 / Smart scoring: Only highest score per challenge counts
 - ✅ 竞赛时间控制 / Competition time control
 
 ## 技术栈 / Tech Stack
@@ -201,6 +202,33 @@ Dify 工作流需要在 `answer` 字段中返回 JSON 格式的评分结果：
   - **审核人标记为 "AI"**
   
 - 其他情况下，提交保持 `pending` 状态，需要管理员人工审核
+
+### 计分规则 / Scoring Rules
+
+#### 多次提交同一题目 / Multiple Submissions for Same Challenge
+
+平台采用**智能计分**策略，符合标准 CTF 竞赛规则：
+
+- ✅ **允许多次提交**：用户可以对同一题目提交多次答案
+- ✅ **只计最高分**：排行榜只计算每个用户在每道题上的**最高得分**
+- ✅ **保留所有记录**：所有提交历史完整保留，可在"我的提交"中查看
+- ✅ **鼓励改进**：用户可以不断优化答案争取更高分数
+
+**示例**：
+```
+用户 A 对题目 1 的提交：
+- 第 1 次：5 分（部分正确）
+- 第 2 次：10 分（完全正确）
+- 第 3 次：8 分（略有退步）
+
+排行榜计分：max(5, 10, 8) = 10 分 ✅
+（不是 5 + 10 + 8 = 23 分）
+```
+
+#### 排行榜排序 / Leaderboard Ranking
+
+1. **主要排序**：总分从高到低
+2. **次要排序**：最后解题时间从早到晚（先完成者排名靠前）
 
 #### 原始 Payload 格式（已废弃）/ Legacy Payload Format (Deprecated)
 
