@@ -110,14 +110,91 @@ kubectl get svc -n ctf-platform ctf-web
 | `ADMIN_PASSWORD` | 管理员密码 / Admin password | admin123 |
 | `EXTERNAL_HOOK_ENABLED` | 启用外部Hook / Enable external hook | false |
 | `EXTERNAL_HOOK_URL` | 外部Hook URL / External hook URL | - |
+| `DIFY_API_KEY` | Dify API密钥 / Dify API key | - |
+| `UPLOAD_URL_PREFIX` | 上传文件URL前缀 / Upload file URL prefix | http://localhost:5000/uploads |
 
 ### 外部Hook集成 / External Hook Integration
 
-平台支持在用户提交答案后，通过POST请求触发外部服务（如Dify工作流）进行自动化审核。
+平台支持在用户提交答案后，通过 Dify API 进行自动化审核和评分。
 
-The platform supports triggering external services (like Dify workflow) via POST request after user submission for automated review.
+The platform supports automated review and scoring via Dify API after user submission.
 
-Payload格式 / Payload format:
+#### 配置步骤 / Configuration Steps
+
+1. 在 `.env` 文件中添加配置 / Add configuration to `.env` file:
+
+```bash
+# 启用外部Hook功能
+EXTERNAL_HOOK_ENABLED=true
+
+# Dify Chat API URL
+EXTERNAL_HOOK_URL=https://aisec.halfcoffee.com/v1/chat-messages
+
+# Dify API Key
+DIFY_API_KEY=app-oF9MDZ8ej2WgCxlIhVEnfXNS
+
+# 上传文件的公网访问URL前缀（需要Dify能够访问）
+UPLOAD_URL_PREFIX=http://13.212.167.64:5000/uploads
+```
+
+2. 确保 Redis 和 Celery worker 已启动 / Ensure Redis and Celery worker are running:
+
+```bash
+celery -A tasks.celery worker --loglevel=info
+```
+
+#### Dify 请求格式 / Dify Request Format
+
+平台会发送以下格式的请求到 Dify API：
+
+```json
+{
+  "inputs": {},
+  "query": "用户提交的答案文本",
+  "response_mode": "blocking",
+  "conversation_id": "",
+  "user": "user-123",
+  "files": [
+    {
+      "type": "image",
+      "transfer_method": "remote_url",
+      "url": "http://13.212.167.64:5000/uploads/2_20260117_090319_image.png"
+    }
+  ]
+}
+```
+
+#### Dify 返回格式要求 / Dify Response Format
+
+Dify 工作流需要在 `answer` 字段中返回 JSON 格式的评分结果：
+
+```json
+{
+  "event": "message",
+  "answer": "{\"success\": true, \"score\": 10, \"feedback\": \"答案正确\", \"auto_approved\": true}",
+  "..."
+}
+```
+
+`answer` 字段中的 JSON 结构：
+- `success` (boolean): 是否成功评估
+- `score` (integer): 得分（0-题目总分）
+- `feedback` (string): 评分反馈
+- `auto_approved` (boolean): 是否自动通过（true则自动审核通过并计分）
+
+#### 自动评分逻辑 / Auto-scoring Logic
+
+- 当 `success=true` 且 `auto_approved=true` 时，系统会自动：
+  - 将提交状态设为 `approved`
+  - 设置得分为 `score` 的值
+  - 记录审核时间
+  
+- 其他情况下，提交保持 `pending` 状态，需要管理员人工审核
+
+#### 原始 Payload 格式（已废弃）/ Legacy Payload Format (Deprecated)
+
+旧版本的 webhook payload 格式（仅供参考）：
+
 ```json
 {
   "submission_id": 1,

@@ -31,9 +31,11 @@ class Config:
     CELERY_BROKER_URL = REDIS_URL
     CELERY_RESULT_BACKEND = REDIS_URL
     
-    # External hook
+    # External hook (Dify integration)
     EXTERNAL_HOOK_ENABLED = os.environ.get('EXTERNAL_HOOK_ENABLED', 'false').lower() == 'true'
     EXTERNAL_HOOK_URL = os.environ.get('EXTERNAL_HOOK_URL', '')
+    DIFY_API_KEY = os.environ.get('DIFY_API_KEY', '')
+    UPLOAD_URL_PREFIX = os.environ.get('UPLOAD_URL_PREFIX', 'http://localhost:5000/uploads')
     
     # Admin defaults
     ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@ctf.local')
