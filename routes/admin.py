@@ -684,6 +684,31 @@ def challenge_move_down(challenge_id):
     return redirect(url_for('admin.challenges'))
 
 
+@admin_bp.route('/challenges/reorder', methods=['POST'])
+@admin_required
+def challenges_reorder():
+    """Reorder challenges via drag and drop (AJAX)"""
+    try:
+        data = request.get_json()
+        challenge_ids = data.get('challenge_ids', [])
+        
+        if not challenge_ids:
+            return jsonify({'success': False, 'message': 'No challenge IDs provided'}), 400
+        
+        # Update order_index for each challenge
+        for index, challenge_id in enumerate(challenge_ids):
+            challenge = Challenge.query.get(challenge_id)
+            if challenge:
+                challenge.order_index = index
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Challenges reordered successfully'})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
 # Image upload for markdown editor
 @admin_bp.route('/upload-image', methods=['POST'])
 @admin_required
