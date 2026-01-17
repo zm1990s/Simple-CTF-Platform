@@ -2,7 +2,7 @@
 
 一个功能完整的 Capture The Flag（CTF）竞赛平台，使用 Python Flask 开发，支持容器化部署。
 
-支持复杂的答题（文字+图片），通过人工审核来确认分数。
+支持复杂的答题（文字+图片），可以通过人工审核或者 Dify Chatflow 对接来确认分数。
 
 A full-featured Capture The Flag (CTF) competition platform built with Python Flask, supporting containerized deployment.
 
@@ -192,8 +192,7 @@ Dify 工作流需要在 `answer` 字段中返回 JSON 格式的评分结果：
 - `score` (integer): 得分（0-题目总分）
 - `feedback` (string): 评分反馈
 - `auto_approved` (boolean): 是否自动审核
-  - `true`: AI 自动审核（根据 `success` 决定通过/拒绝）
-  - `false`: 保持 pending 状态，等待人工审核
+  - `true`: 始终为 True，除非运行错误
 
 #### 自动评分逻辑 / Auto-scoring Logic
 
