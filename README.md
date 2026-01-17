@@ -29,7 +29,17 @@ cd CTF
 cp .env.example .env
 ```
 
-3. 修改 `.env` 文件中的配置（特别是 SECRET_KEY）/ Edit `.env` file (especially SECRET_KEY)
+3. 修改 `.env` 文件中的配置（特别是 SECRET_KEY 和 Dify 配置）/ Edit `.env` file (especially SECRET_KEY and Dify settings):
+```bash
+# 必须修改的配置 / Required settings
+SECRET_KEY=your-random-secret-key-here
+
+# 如果需要 Dify 自动评分 / If you need Dify auto-scoring
+EXTERNAL_HOOK_ENABLED=true
+EXTERNAL_HOOK_URL=https://aisec.halfcoffee.com/v1/chat-messages
+DIFY_API_KEY=app-your-dify-api-key
+UPLOAD_URL_PREFIX=http://your-public-ip:5000/uploads
+```
 
 4. 启动服务 / Start services:
 ```bash
