@@ -142,10 +142,10 @@ EXTERNAL_HOOK_ENABLED=true
 EXTERNAL_HOOK_URL=https://aisec.halfcoffee.com/v1/chat-messages
 
 # Dify API Key
-DIFY_API_KEY=app-oF9MDZ8ej2WgCxlIhVEnfXNS
+DIFY_API_KEY=XXXX
 
 # 上传文件的公网访问URL前缀（需要Dify能够访问）
-UPLOAD_URL_PREFIX=http://13.212.167.64:5000/uploads
+UPLOAD_URL_PREFIX=http://<YOUR-CTF-Platform-IP>:5000/uploads
 ```
 
 2. 确保 Redis 和 Celery worker 已启动 / Ensure Redis and Celery worker are running:
@@ -169,7 +169,7 @@ celery -A tasks.celery worker --loglevel=info
     {
       "type": "image",
       "transfer_method": "remote_url",
-      "url": "http://13.212.167.64:5000/uploads/2_20260117_090319_image.png"
+      "url": "http://<YOUR-CTF-Platform-IP>:5000/uploads/2_20260117_090319_image.png"
     }
   ]
 }
