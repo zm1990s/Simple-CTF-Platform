@@ -503,9 +503,20 @@ def competitions_export_all():
 @admin_bp.route('/challenges')
 @admin_required
 def challenges():
-    """List all challenges"""
-    challenges = Challenge.query.order_by(Challenge.order_index.asc(), Challenge.created_at.desc()).all()
-    return render_template('admin/challenges.html', challenges=challenges)
+    """List all challenges grouped by competition"""
+    # Get all competitions with their challenges
+    competitions = Competition.query.order_by(Competition.created_at.desc()).all()
+    
+    # Group challenges by competition
+    challenges_by_competition = {}
+    for competition in competitions:
+        challenges_by_competition[competition.id] = Challenge.query.filter_by(
+            competition_id=competition.id
+        ).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
+    
+    return render_template('admin/challenges.html', 
+                         competitions=competitions,
+                         challenges_by_competition=challenges_by_competition)
 
 
 @admin_bp.route('/challenges/new', methods=['GET', 'POST'])
