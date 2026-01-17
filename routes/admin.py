@@ -288,14 +288,19 @@ def competition_duplicate(competition_id):
     db.session.add(new_competition)
     db.session.flush()  # Get new competition ID
     
-    # Duplicate all challenges
-    for challenge in original.challenges:
+    # Duplicate all challenges (sorted by order_index to maintain order)
+    original_challenges = Challenge.query.filter_by(
+        competition_id=original.id
+    ).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
+    
+    for challenge in original_challenges:
         new_challenge = Challenge(
             title=challenge.title,
             description=challenge.description,
             points=challenge.points,
             category=challenge.category,
             competition_id=new_competition.id,
+            order_index=challenge.order_index,  # Preserve original order
             is_active=challenge.is_active
         )
         db.session.add(new_challenge)
@@ -320,13 +325,18 @@ def competition_export(competition_id):
         'challenges': []
     }
     
-    # Add all challenges
-    for challenge in competition.challenges:
+    # Add all challenges (sorted by order_index to preserve order)
+    sorted_challenges = Challenge.query.filter_by(
+        competition_id=competition.id
+    ).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
+    
+    for challenge in sorted_challenges:
         challenge_data = {
             'title': challenge.title,
             'description': challenge.description,
             'points': challenge.points,
             'category': challenge.category,
+            'order_index': challenge.order_index,
             'is_active': challenge.is_active
         }
         competition_data['challenges'].append(challenge_data)
@@ -389,13 +399,14 @@ def competition_import():
             
             # Create challenges
             challenge_count = 0
-            for challenge_data in data['challenges']:
+            for idx, challenge_data in enumerate(data['challenges']):
                 challenge = Challenge(
                     title=challenge_data['title'],
                     description=challenge_data['description'],
                     points=challenge_data.get('points', 100),
                     category=challenge_data.get('category', ''),
                     competition_id=competition.id,
+                    order_index=challenge_data.get('order_index', idx),  # Use exported order or index
                     is_active=challenge_data.get('is_active', True)
                 )
                 db.session.add(challenge)
@@ -472,13 +483,18 @@ def competitions_export_all():
                 'challenges': []
             }
             
-            # Add all challenges
-            for challenge in competition.challenges:
+            # Add all challenges (sorted by order_index to preserve order)
+            sorted_challenges = Challenge.query.filter_by(
+                competition_id=competition.id
+            ).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
+            
+            for challenge in sorted_challenges:
                 challenge_data = {
                     'title': challenge.title,
                     'description': challenge.description,
                     'points': challenge.points,
                     'category': challenge.category,
+                    'order_index': challenge.order_index,
                     'is_active': challenge.is_active
                 }
                 competition_data['challenges'].append(challenge_data)
