@@ -55,6 +55,7 @@
                             <table class="table table-striped table-hover">
                                 <thead class="table-light">
                                     <tr>
+                                        <th style="width: 40px;">#</th>
                                         <th style="width: 50px;">
                                             <i class="bi bi-grip-vertical text-muted" title="{{ _('Drag to reorder') }}"></i>
                                         </th>
@@ -68,6 +69,7 @@
                                 <tbody class="sortable-challenges" data-competition-id="{{ competition.id }}">
                                     {% for challenge in comp_challenges %}
                                         <tr draggable="true" data-challenge-id="{{ challenge.id }}" class="draggable-row">
+                                            <td class="text-muted" style="font-weight: 500;">{{ loop.index }}</td>
                                             <td class="drag-handle" style="cursor: move;">
                                                 <i class="bi bi-grip-vertical text-secondary"></i>
                                             </td>
