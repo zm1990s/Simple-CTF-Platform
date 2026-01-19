@@ -21,13 +21,27 @@
             </div>
             
             <div class="mb-3">
-                <label class="form-label">{{ _('Description') }}</label>
-                {{ form.description(class="form-control", rows=5) }}
-                {% if form.description.errors %}
-                    <div class="text-danger">
-                        {% for error in form.description.errors %}{{ error }}{% endfor %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ _('Description (Markdown)') }}</label>
+                        {{ form.description(class="form-control", rows=15, id="markdown-editor") }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">
+                                {% for error in form.description.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
-                {% endif %}
+                    <div class="col-md-6">
+                        <label class="form-label">{{ _('Preview') }}</label>
+                        <div id="markdown-preview" class="markdown-preview"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ _('Upload Image for Markdown') }}</label>
+                <input type="file" id="image-upload" class="form-control" accept="image/*">
+                <small class="text-muted">{{ _('Upload an image and click to insert into markdown') }}</small>
             </div>
             
             <div class="mb-3">
@@ -46,4 +60,56 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const editor = document.getElementById('markdown-editor');
+    const preview = document.getElementById('markdown-preview');
+    const imageUpload = document.getElementById('image-upload');
+    
+    // Update preview on input
+    editor.addEventListener('input', function() {
+        preview.innerHTML = marked.parse(editor.value);
+    });
+    
+    // Initial preview
+    if (editor.value) {
+        preview.innerHTML = marked.parse(editor.value);
+    }
+    
+    // Image upload
+    imageUpload.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        fetch('{{ url_for("admin.upload_image") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.url) {
+                const imageMarkdown = `\n![${file.name}](${data.url})\n`;
+                const cursorPos = editor.selectionStart;
+                const textBefore = editor.value.substring(0, cursorPos);
+                const textAfter = editor.value.substring(cursorPos);
+                
+                editor.value = textBefore + imageMarkdown + textAfter;
+                editor.dispatchEvent(new Event('input'));
+                
+                alert('{{ _("Image inserted into markdown!") }}');
+                imageUpload.value = ''; // Reset file input
+            } else {
+                alert('{{ _("Failed to upload image") }}');
+            }
+        })
+        .catch(error => {
+            alert('{{ _("Error uploading image") }}: ' + error);
+        });
+    });
+</script>
 {% endblock %}

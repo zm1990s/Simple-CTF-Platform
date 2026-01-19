@@ -30,9 +30,9 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
-                        <p class="card-text" style="color: #b0b0b0;">
-                            {{ competition.description[:200] if competition.description else '' }}...
-                        </p>
+                        <div class="card-text competition-description-{{ competition.id }}" style="color: #b0b0b0; max-height: 100px; overflow: hidden; position: relative;">
+                        </div>
+                        <div style="height: 20px; background: linear-gradient(to bottom, transparent, var(--bg-secondary)); position: relative; margin-top: -20px;"></div>
                         
                         {% if competition.countdown_minutes > 0 %}
                             <div class="alert alert-info d-flex align-items-center" style="background: rgba(0, 170, 255, 0.15); border: 1px solid var(--cyber-secondary);">
@@ -103,6 +103,20 @@
 
 {% block extra_js %}
 <script>
+    // Render competition descriptions as Markdown
+    {% for competition in competitions %}
+    (function() {
+        const descElement = document.querySelector('.competition-description-{{ competition.id }}');
+        if (descElement) {
+            const markdownText = {{ competition.description|tojson|safe }};
+            if (markdownText) {
+                const fullHtml = marked.parse(markdownText);
+                descElement.innerHTML = fullHtml;
+            }
+        }
+    })();
+    {% endfor %}
+    
     // Real-time countdown update for all competitions
     const countdownBadges = document.querySelectorAll('.countdown-badge');
     

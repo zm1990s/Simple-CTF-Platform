@@ -63,7 +63,7 @@
             <i class="bi bi-info-circle-fill"></i> {{ _('Description') }}
         </h4>
         <div class="card" style="border: 1px solid rgba(0, 170, 255, 0.3); background: var(--bg-tertiary);">
-            <div class="card-body markdown-content" style="color: var(--text-primary);">{{ competition.description }}</div>
+            <div class="card-body markdown-content" style="color: var(--text-primary);" id="competition-description"></div>
         </div>
     </div>
 {% endif %}
@@ -131,6 +131,13 @@
 
 {% block extra_js %}
 <script>
+    // Render competition description as Markdown
+    const descriptionElement = document.getElementById('competition-description');
+    if (descriptionElement) {
+        const markdownText = {{ competition.description|tojson|safe }};
+        descriptionElement.innerHTML = marked.parse(markdownText);
+    }
+    
     // Real-time countdown update
     const countdownDisplay = document.querySelector('.countdown-display');
     if (countdownDisplay) {
