@@ -98,6 +98,7 @@ class Challenge(db.Model):
     # Relationships
     submissions = db.relationship('Submission', backref='challenge', lazy='dynamic', cascade='all, delete-orphan')
     dify_config = db.relationship('ChallengeDifyConfig', backref='challenge', uselist=False, cascade='all, delete-orphan')
+    dify_credential = db.relationship('ChallengeDifyCredential', backref='challenge', uselist=False, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Challenge {self.title}>'
@@ -117,6 +118,21 @@ class ChallengeDifyConfig(db.Model):
 
     def __repr__(self):
         return f'<ChallengeDifyConfig challenge={self.challenge_id} enabled={self.enabled}>'
+
+
+class ChallengeDifyCredential(db.Model):
+    """Per-challenge Dify API key credential (obfuscated + masked)."""
+    __tablename__ = 'challenge_dify_credentials'
+
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenges.id'), nullable=False, unique=True)
+    api_key_token = db.Column(db.Text)
+    api_key_masked = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ChallengeDifyCredential challenge={self.challenge_id}>'
 
 
 class Submission(db.Model):

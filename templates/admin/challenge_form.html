@@ -44,15 +44,21 @@
 
                     <div id="dify-config-fields">
                         <div class="mb-3">
-                            <label class="form-label">{{ _('Dify Base URL') }}</label>
-                            {{ form.dify_base_url(class="form-control", placeholder="https://your-dify-host") }}
-                            <small class="text-muted">{{ _('Example: https://dify.example.com') }}</small>
+                            <label class="form-label">{{ _('Dify Hook URL') }}</label>
+                            {{ form.dify_hook_url(class="form-control", placeholder="https://aisec.halfcoffee.com/v1/chat-messages") }}
+                            <small class="text-muted">{{ _('Use a full endpoint URL, same format as EXTERNAL_HOOK_URL.') }}</small>
                         </div>
 
-                        <div class="mb-0">
-                            <label class="form-label">{{ _('Dify API Path') }}</label>
-                            {{ form.dify_api_path(class="form-control", placeholder="/v1/chat-messages") }}
-                            <small class="text-muted">{{ _('Will be appended to Base URL. Keep leading slash.') }}</small>
+                        <div class="mt-3">
+                            <label class="form-label">{{ _('Dify API Key') }}</label>
+                            {{ form.dify_api_key(class="form-control", placeholder=current_dify_api_key_masked or _('Leave empty to keep existing or fallback to global key')) }}
+                            <small class="text-muted">
+                                {% if current_dify_api_key_masked %}
+                                    {{ _('Current key:') }} {{ current_dify_api_key_masked }}
+                                {% else %}
+                                    {{ _('Stored in masked form. Leave empty to use the current value/global default.') }}
+                                {% endif %}
+                            </small>
                         </div>
                     </div>
                 </div>

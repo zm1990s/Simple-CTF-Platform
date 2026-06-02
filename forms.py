@@ -57,8 +57,8 @@ class ChallengeForm(FlaskForm):
     category = StringField('Category', validators=[Length(max=100)])
     competition_id = SelectField('Competition', coerce=int, validators=[DataRequired()])
     use_custom_dify = BooleanField('Enable Challenge-Specific Dify Endpoint')
-    dify_base_url = StringField('Dify Base URL', validators=[Optional(), Length(max=255)])
-    dify_api_path = StringField('Dify API Path', validators=[Optional(), Length(max=255)])
+    dify_hook_url = StringField('Dify Hook URL', validators=[Optional(), Length(max=255)])
+    dify_api_key = PasswordField('Dify API Key', validators=[Optional(), Length(max=255)])
 
     def validate(self, extra_validators=None):
         valid = super().validate(extra_validators=extra_validators)
@@ -66,17 +66,13 @@ class ChallengeForm(FlaskForm):
             return False
 
         if self.use_custom_dify.data:
-            base_url = (self.dify_base_url.data or '').strip()
-            api_path = (self.dify_api_path.data or '').strip()
+            hook_url = (self.dify_hook_url.data or '').strip()
 
-            if not base_url:
-                self.dify_base_url.errors.append('Dify Base URL is required when challenge-specific endpoint is enabled.')
+            if not hook_url:
+                self.dify_hook_url.errors.append('Dify Hook URL is required when challenge-specific endpoint is enabled.')
                 return False
-            if not (base_url.startswith('http://') or base_url.startswith('https://')):
-                self.dify_base_url.errors.append('Dify Base URL must start with http:// or https://.')
-                return False
-            if api_path and not api_path.startswith('/'):
-                self.dify_api_path.errors.append('Dify API Path must start with /.')
+            if not (hook_url.startswith('http://') or hook_url.startswith('https://')):
+                self.dify_hook_url.errors.append('Dify Hook URL must start with http:// or https://.')
                 return False
 
         return True
