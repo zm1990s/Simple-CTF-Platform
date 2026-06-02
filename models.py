@@ -97,9 +97,42 @@ class Challenge(db.Model):
     
     # Relationships
     submissions = db.relationship('Submission', backref='challenge', lazy='dynamic', cascade='all, delete-orphan')
+    dify_config = db.relationship('ChallengeDifyConfig', backref='challenge', uselist=False, cascade='all, delete-orphan')
+    dify_credential = db.relationship('ChallengeDifyCredential', backref='challenge', uselist=False, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Challenge {self.title}>'
+
+
+class ChallengeDifyConfig(db.Model):
+    """Per-challenge Dify endpoint override settings"""
+    __tablename__ = 'challenge_dify_configs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenges.id'), nullable=False, unique=True)
+    enabled = db.Column(db.Boolean, default=False)
+    base_url = db.Column(db.String(255))
+    api_path = db.Column(db.String(255), default='/v1/chat-messages')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ChallengeDifyConfig challenge={self.challenge_id} enabled={self.enabled}>'
+
+
+class ChallengeDifyCredential(db.Model):
+    """Per-challenge Dify API key credential (obfuscated + masked)."""
+    __tablename__ = 'challenge_dify_credentials'
+
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenges.id'), nullable=False, unique=True)
+    api_key_token = db.Column(db.Text)
+    api_key_masked = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ChallengeDifyCredential challenge={self.challenge_id}>'
 
 
 class Submission(db.Model):
@@ -122,6 +155,7 @@ class Submission(db.Model):
     # Relationships
     files = db.relationship('SubmissionFile', backref='submission', lazy='dynamic', cascade='all, delete-orphan')
     reviewer = db.relationship('User', foreign_keys=[reviewed_by_id])
+    dify_log = db.relationship('SubmissionDifyLog', backref='submission', uselist=False, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Submission {self.id} by User {self.user_id}>'
@@ -157,6 +191,21 @@ class SubmissionFile(db.Model):
     
     def __repr__(self):
         return f'<SubmissionFile {self.filename}>'
+
+
+class SubmissionDifyLog(db.Model):
+    """Stores Dify review feedback/score for admin secondary review reference."""
+    __tablename__ = 'submission_dify_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey('submissions.id'), nullable=False, unique=True)
+    feedback = db.Column(db.Text)
+    score = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<SubmissionDifyLog submission={self.submission_id}>'
 
 
 class PlatformSettings(db.Model):

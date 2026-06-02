@@ -123,8 +123,9 @@ def challenge_detail(challenge_id):
         
         db.session.commit()
         
-        # Trigger external hook if enabled
-        if current_app.config['EXTERNAL_HOOK_ENABLED']:
+        # Trigger external hook if enabled globally or for this challenge.
+        has_challenge_dify = bool(challenge.dify_config and challenge.dify_config.enabled)
+        if current_app.config['EXTERNAL_HOOK_ENABLED'] or has_challenge_dify:
             from tasks import trigger_external_hook
             trigger_external_hook.delay(submission.id)
         

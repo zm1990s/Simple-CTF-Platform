@@ -4,6 +4,7 @@ import json
 import requests
 from celery import Celery
 from datetime import datetime
+from dify_secrets import reveal_api_key
 
 # Add current directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,11 +26,34 @@ celery.conf.update(
 )
 
 
+def _build_hook_url(challenge, app):
+    """Return challenge-specific hook URL if enabled, otherwise global hook URL."""
+    challenge_cfg = getattr(challenge, 'dify_config', None)
+    if challenge_cfg and challenge_cfg.enabled and (challenge_cfg.base_url or '').strip():
+        return challenge_cfg.base_url.strip()
+
+    return (app.config.get('EXTERNAL_HOOK_URL') or '').strip()
+
+
+def _resolve_api_key(challenge, app):
+    """Resolve API key with challenge-level override and global fallback."""
+    global_api_key = app.config.get('DIFY_API_KEY', '')
+    challenge_cfg = getattr(challenge, 'dify_config', None)
+    challenge_credential = getattr(challenge, 'dify_credential', None)
+
+    if challenge_cfg and challenge_cfg.enabled and challenge_credential and (challenge_credential.api_key_token or '').strip():
+        revealed = reveal_api_key(challenge_credential.api_key_token, app.config.get('SECRET_KEY', ''))
+        if revealed:
+            return revealed
+
+    return global_api_key
+
+
 @celery.task
 def trigger_external_hook(submission_id):
     """Trigger Dify workflow for automated submission review and scoring"""
     from app import create_app
-    from models import Submission, Challenge, User, SubmissionFile, db
+    from models import Submission, Challenge, User, SubmissionFile, SubmissionDifyLog, db
     
     app = create_app()
     with app.app_context():
@@ -67,8 +91,14 @@ def trigger_external_hook(submission_id):
         
         # Send POST request to Dify API
         try:
-            hook_url = app.config['EXTERNAL_HOOK_URL']
-            api_key = app.config.get('DIFY_API_KEY', '')
+            hook_url = _build_hook_url(challenge, app)
+            api_key = _resolve_api_key(challenge, app)
+
+            if not hook_url:
+                return {
+                    'success': False,
+                    'error': 'No Dify hook URL configured (neither challenge-specific nor global).'
+                }
             
             headers = {
                 'Authorization': f'Bearer {api_key}',
@@ -97,6 +127,18 @@ def trigger_external_hook(submission_id):
 
                 # Parse the answer JSON string
                 answer_data = json.loads(answer_text)
+
+                # Persist feedback/score for admin secondary review reference.
+                dify_log = submission.dify_log
+                if not dify_log:
+                    dify_log = SubmissionDifyLog(submission_id=submission.id)
+                    db.session.add(dify_log)
+                dify_log.feedback = answer_data.get('feedback', '')
+                score_value = answer_data.get('score')
+                try:
+                    dify_log.score = int(score_value) if score_value is not None else None
+                except (TypeError, ValueError):
+                    dify_log.score = None
                 
                 # Update submission based on Dify response
                 # Auto-approve/reject if auto_approved is True

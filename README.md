@@ -130,6 +130,18 @@ kubectl get svc -n ctf-platform ctf-web
 
 The platform supports automated review and scoring via Dify API after user submission.
 
+#### 按题目独立 Dify 配置 / Per-Challenge Dify Override
+
+- 管理员可在每个 Challenge 中单独启用 Dify 配置（完整 Hook URL + API Key）。
+- API Key 会以打码方式保存展示，数据库不直接保存裸明文。
+- 提交时优先使用题目级 Dify 配置；若题目未配置 API Key，则自动回退全局 `DIFY_API_KEY`。
+
+题目级 Hook URL 示例：
+
+```bash
+https://aisec.halfcoffee.com/v1/chat-messages
+```
+
 #### 配置步骤 / Configuration Steps
 
 1. 在 `.env` 文件中添加配置 / Add configuration to `.env` file:

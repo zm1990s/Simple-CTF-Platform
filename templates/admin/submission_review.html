@@ -65,6 +65,12 @@
                 <h4>{{ _('Review') }}</h4>
             </div>
             <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>{{ _('Dify Reference') }}</strong><br>
+                    <span><strong>{{ _('Score') }}:</strong> {{ submission.dify_log.score if submission.dify_log and submission.dify_log.score is not none else '-' }}</span><br>
+                    <span><strong>{{ _('Feedback') }}:</strong> {{ submission.dify_log.feedback if submission.dify_log and submission.dify_log.feedback else '-' }}</span>
+                </div>
+
                 <form method="POST">
                     {{ form.hidden_tag() }}
                     

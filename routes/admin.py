@@ -7,8 +7,9 @@ from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, send_file, session
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, User, Challenge, Competition, Submission, PlatformSettings
+from models import db, User, Challenge, Competition, Submission, PlatformSettings, ChallengeDifyConfig, ChallengeDifyCredential
 from forms import ChallengeForm, CompetitionForm, ReviewForm, PlatformSettingsForm, ResetPasswordForm
+from dify_secrets import mask_api_key, obfuscate_api_key, reveal_api_key
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -316,6 +317,21 @@ def competition_duplicate(competition_id):
             is_active=challenge.is_active
         )
         db.session.add(new_challenge)
+        db.session.flush()
+
+        if challenge.dify_config:
+            db.session.add(ChallengeDifyConfig(
+                challenge_id=new_challenge.id,
+                enabled=challenge.dify_config.enabled,
+                base_url=challenge.dify_config.base_url
+            ))
+
+        if challenge.dify_credential:
+            db.session.add(ChallengeDifyCredential(
+                challenge_id=new_challenge.id,
+                api_key_token=challenge.dify_credential.api_key_token,
+                api_key_masked=challenge.dify_credential.api_key_masked
+            ))
     
     db.session.commit()
     flash(f'Competition duplicated as "{new_competition.name}".', 'success')
@@ -343,13 +359,26 @@ def competition_export(competition_id):
     ).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
     
     for challenge in sorted_challenges:
+        api_key_plaintext = ''
+        if challenge.dify_credential and challenge.dify_credential.api_key_token:
+            api_key_plaintext = reveal_api_key(
+                challenge.dify_credential.api_key_token,
+                current_app.config.get('SECRET_KEY', '')
+            )
+
         challenge_data = {
             'title': challenge.title,
             'description': challenge.description,
             'points': challenge.points,
             'category': challenge.category,
             'order_index': challenge.order_index,
-            'is_active': challenge.is_active
+            'is_active': challenge.is_active,
+            'dify_config': {
+                'enabled': challenge.dify_config.enabled,
+                'hook_url': challenge.dify_config.base_url,
+                'api_key': api_key_plaintext,
+                'api_key_masked': challenge.dify_credential.api_key_masked if challenge.dify_credential else ''
+            } if challenge.dify_config else None
         }
         competition_data['challenges'].append(challenge_data)
     
@@ -422,6 +451,30 @@ def competition_import():
                     is_active=challenge_data.get('is_active', True)
                 )
                 db.session.add(challenge)
+                db.session.flush()
+
+                imported_dify = challenge_data.get('dify_config')
+                if imported_dify:
+                    legacy_base = (imported_dify.get('base_url') or '').strip().rstrip('/')
+                    legacy_path = (imported_dify.get('api_path') or '').strip()
+                    if legacy_path and not legacy_path.startswith('/'):
+                        legacy_path = f'/{legacy_path}'
+                    legacy_hook_url = f"{legacy_base}{legacy_path}" if legacy_base else ''
+                    hook_url = (imported_dify.get('hook_url') or legacy_hook_url).strip()
+                    api_key_plaintext = (imported_dify.get('api_key') or '').strip()
+
+                    db.session.add(ChallengeDifyConfig(
+                        challenge_id=challenge.id,
+                        enabled=bool(imported_dify.get('enabled', False)),
+                        base_url=hook_url
+                    ))
+
+                    if api_key_plaintext:
+                        db.session.add(ChallengeDifyCredential(
+                            challenge_id=challenge.id,
+                            api_key_token=obfuscate_api_key(api_key_plaintext, current_app.config.get('SECRET_KEY', '')),
+                            api_key_masked=mask_api_key(api_key_plaintext)
+                        ))
                 challenge_count += 1
             
             db.session.commit()
@@ -451,6 +504,15 @@ def challenge_export(challenge_id):
         'points': challenge.points,
         'category': challenge.category,
         'is_active': challenge.is_active,
+        'dify_config': {
+            'enabled': challenge.dify_config.enabled,
+            'hook_url': challenge.dify_config.base_url,
+            'api_key': reveal_api_key(
+                challenge.dify_credential.api_key_token,
+                current_app.config.get('SECRET_KEY', '')
+            ) if challenge.dify_credential and challenge.dify_credential.api_key_token else '',
+            'api_key_masked': challenge.dify_credential.api_key_masked if challenge.dify_credential else ''
+        } if challenge.dify_config else None,
         'competition_name': challenge.competition.name,
         'export_date': datetime.utcnow().isoformat()
     }
@@ -501,13 +563,26 @@ def competitions_export_all():
             ).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
             
             for challenge in sorted_challenges:
+                api_key_plaintext = ''
+                if challenge.dify_credential and challenge.dify_credential.api_key_token:
+                    api_key_plaintext = reveal_api_key(
+                        challenge.dify_credential.api_key_token,
+                        current_app.config.get('SECRET_KEY', '')
+                    )
+
                 challenge_data = {
                     'title': challenge.title,
                     'description': challenge.description,
                     'points': challenge.points,
                     'category': challenge.category,
                     'order_index': challenge.order_index,
-                    'is_active': challenge.is_active
+                    'is_active': challenge.is_active,
+                    'dify_config': {
+                        'enabled': challenge.dify_config.enabled,
+                        'hook_url': challenge.dify_config.base_url,
+                        'api_key': api_key_plaintext,
+                        'api_key_masked': challenge.dify_credential.api_key_masked if challenge.dify_credential else ''
+                    } if challenge.dify_config else None
                 }
                 competition_data['challenges'].append(challenge_data)
             
@@ -553,7 +628,7 @@ def challenge_new():
     """Create new challenge"""
     form = ChallengeForm()
     form.competition_id.choices = [(c.id, c.name) for c in Competition.query.all()]
-    
+
     if form.validate_on_submit():
         challenge = Challenge(
             title=form.title.data,
@@ -563,12 +638,35 @@ def challenge_new():
             competition_id=form.competition_id.data
         )
         db.session.add(challenge)
+        db.session.flush()
+
+        if form.use_custom_dify.data:
+            dify_config = ChallengeDifyConfig(
+                challenge_id=challenge.id,
+                enabled=True,
+                base_url=(form.dify_hook_url.data or '').strip()
+            )
+            db.session.add(dify_config)
+
+            new_key = (form.dify_api_key.data or '').strip()
+            if new_key:
+                db.session.add(ChallengeDifyCredential(
+                    challenge_id=challenge.id,
+                    api_key_token=obfuscate_api_key(new_key, current_app.config.get('SECRET_KEY', '')),
+                    api_key_masked=mask_api_key(new_key)
+                ))
+
         db.session.commit()
         
         flash('Challenge created successfully.', 'success')
         return redirect(url_for('admin.challenges'))
     
-    return render_template('admin/challenge_form.html', form=form, title=_('New Challenge'))
+    return render_template(
+        'admin/challenge_form.html',
+        form=form,
+        title=_('New Challenge'),
+        current_dify_api_key_masked=''
+    )
 
 
 @admin_bp.route('/challenges/<int:challenge_id>/edit', methods=['GET', 'POST'])
@@ -578,6 +676,12 @@ def challenge_edit(challenge_id):
     challenge = Challenge.query.get_or_404(challenge_id)
     form = ChallengeForm(obj=challenge)
     form.competition_id.choices = [(c.id, c.name) for c in Competition.query.all()]
+
+    if request.method == 'GET':
+        existing_config = challenge.dify_config
+        if existing_config:
+            form.use_custom_dify.data = existing_config.enabled
+            form.dify_hook_url.data = existing_config.base_url
     
     if form.validate_on_submit():
         challenge.title = form.title.data
@@ -585,12 +689,38 @@ def challenge_edit(challenge_id):
         challenge.points = form.points.data
         challenge.category = form.category.data
         challenge.competition_id = form.competition_id.data
+
+        existing_config = challenge.dify_config
+        if form.use_custom_dify.data:
+            if not existing_config:
+                existing_config = ChallengeDifyConfig(challenge_id=challenge.id)
+                db.session.add(existing_config)
+            existing_config.enabled = True
+            existing_config.base_url = (form.dify_hook_url.data or '').strip()
+
+            key_input = (form.dify_api_key.data or '').strip()
+            if key_input:
+                existing_credential = challenge.dify_credential
+                if not existing_credential:
+                    existing_credential = ChallengeDifyCredential(challenge_id=challenge.id)
+                    db.session.add(existing_credential)
+                existing_credential.api_key_token = obfuscate_api_key(key_input, current_app.config.get('SECRET_KEY', ''))
+                existing_credential.api_key_masked = mask_api_key(key_input)
+        elif existing_config:
+            existing_config.enabled = False
         
         db.session.commit()
         flash('Challenge updated successfully.', 'success')
         return redirect(url_for('admin.challenges'))
     
-    return render_template('admin/challenge_form.html', form=form, title=_('Edit Challenge'), challenge=challenge)
+    current_dify_api_key_masked = challenge.dify_credential.api_key_masked if challenge.dify_credential else ''
+    return render_template(
+        'admin/challenge_form.html',
+        form=form,
+        title=_('Edit Challenge'),
+        challenge=challenge,
+        current_dify_api_key_masked=current_dify_api_key_masked
+    )
 
 
 @admin_bp.route('/challenges/<int:challenge_id>/delete', methods=['POST'])
@@ -644,6 +774,22 @@ def challenge_copy(challenge_id):
     )
     
     db.session.add(new_challenge)
+    db.session.flush()
+
+    if original.dify_config:
+        db.session.add(ChallengeDifyConfig(
+            challenge_id=new_challenge.id,
+            enabled=original.dify_config.enabled,
+            base_url=original.dify_config.base_url
+        ))
+
+    if original.dify_credential:
+        db.session.add(ChallengeDifyCredential(
+            challenge_id=new_challenge.id,
+            api_key_token=original.dify_credential.api_key_token,
+            api_key_masked=original.dify_credential.api_key_masked
+        ))
+
     db.session.commit()
     
     flash(f'Challenge copied successfully as "{new_title}".', 'success')
