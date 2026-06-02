@@ -155,6 +155,7 @@ class Submission(db.Model):
     # Relationships
     files = db.relationship('SubmissionFile', backref='submission', lazy='dynamic', cascade='all, delete-orphan')
     reviewer = db.relationship('User', foreign_keys=[reviewed_by_id])
+    dify_log = db.relationship('SubmissionDifyLog', backref='submission', uselist=False, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Submission {self.id} by User {self.user_id}>'
@@ -190,6 +191,21 @@ class SubmissionFile(db.Model):
     
     def __repr__(self):
         return f'<SubmissionFile {self.filename}>'
+
+
+class SubmissionDifyLog(db.Model):
+    """Stores Dify review feedback/score for admin secondary review reference."""
+    __tablename__ = 'submission_dify_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey('submissions.id'), nullable=False, unique=True)
+    feedback = db.Column(db.Text)
+    score = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<SubmissionDifyLog submission={self.submission_id}>'
 
 
 class PlatformSettings(db.Model):

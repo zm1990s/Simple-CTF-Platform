@@ -53,7 +53,7 @@ def _resolve_api_key(challenge, app):
 def trigger_external_hook(submission_id):
     """Trigger Dify workflow for automated submission review and scoring"""
     from app import create_app
-    from models import Submission, Challenge, User, SubmissionFile, db
+    from models import Submission, Challenge, User, SubmissionFile, SubmissionDifyLog, db
     
     app = create_app()
     with app.app_context():
@@ -127,6 +127,18 @@ def trigger_external_hook(submission_id):
 
                 # Parse the answer JSON string
                 answer_data = json.loads(answer_text)
+
+                # Persist feedback/score for admin secondary review reference.
+                dify_log = submission.dify_log
+                if not dify_log:
+                    dify_log = SubmissionDifyLog(submission_id=submission.id)
+                    db.session.add(dify_log)
+                dify_log.feedback = answer_data.get('feedback', '')
+                score_value = answer_data.get('score')
+                try:
+                    dify_log.score = int(score_value) if score_value is not None else None
+                except (TypeError, ValueError):
+                    dify_log.score = None
                 
                 # Update submission based on Dify response
                 # Auto-approve/reject if auto_approved is True
