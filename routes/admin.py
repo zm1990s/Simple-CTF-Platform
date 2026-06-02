@@ -9,7 +9,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from models import db, User, Challenge, Competition, Submission, PlatformSettings, ChallengeDifyConfig, ChallengeDifyCredential
 from forms import ChallengeForm, CompetitionForm, ReviewForm, PlatformSettingsForm, ResetPasswordForm
-from dify_secrets import mask_api_key, obfuscate_api_key
+from dify_secrets import mask_api_key, obfuscate_api_key, reveal_api_key
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -359,6 +359,13 @@ def competition_export(competition_id):
     ).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
     
     for challenge in sorted_challenges:
+        api_key_plaintext = ''
+        if challenge.dify_credential and challenge.dify_credential.api_key_token:
+            api_key_plaintext = reveal_api_key(
+                challenge.dify_credential.api_key_token,
+                current_app.config.get('SECRET_KEY', '')
+            )
+
         challenge_data = {
             'title': challenge.title,
             'description': challenge.description,
@@ -369,6 +376,7 @@ def competition_export(competition_id):
             'dify_config': {
                 'enabled': challenge.dify_config.enabled,
                 'hook_url': challenge.dify_config.base_url,
+                'api_key': api_key_plaintext,
                 'api_key_masked': challenge.dify_credential.api_key_masked if challenge.dify_credential else ''
             } if challenge.dify_config else None
         }
@@ -453,12 +461,20 @@ def competition_import():
                         legacy_path = f'/{legacy_path}'
                     legacy_hook_url = f"{legacy_base}{legacy_path}" if legacy_base else ''
                     hook_url = (imported_dify.get('hook_url') or legacy_hook_url).strip()
+                    api_key_plaintext = (imported_dify.get('api_key') or '').strip()
 
                     db.session.add(ChallengeDifyConfig(
                         challenge_id=challenge.id,
                         enabled=bool(imported_dify.get('enabled', False)),
                         base_url=hook_url
                     ))
+
+                    if api_key_plaintext:
+                        db.session.add(ChallengeDifyCredential(
+                            challenge_id=challenge.id,
+                            api_key_token=obfuscate_api_key(api_key_plaintext, current_app.config.get('SECRET_KEY', '')),
+                            api_key_masked=mask_api_key(api_key_plaintext)
+                        ))
                 challenge_count += 1
             
             db.session.commit()
@@ -491,6 +507,10 @@ def challenge_export(challenge_id):
         'dify_config': {
             'enabled': challenge.dify_config.enabled,
             'hook_url': challenge.dify_config.base_url,
+            'api_key': reveal_api_key(
+                challenge.dify_credential.api_key_token,
+                current_app.config.get('SECRET_KEY', '')
+            ) if challenge.dify_credential and challenge.dify_credential.api_key_token else '',
             'api_key_masked': challenge.dify_credential.api_key_masked if challenge.dify_credential else ''
         } if challenge.dify_config else None,
         'competition_name': challenge.competition.name,
@@ -543,6 +563,13 @@ def competitions_export_all():
             ).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
             
             for challenge in sorted_challenges:
+                api_key_plaintext = ''
+                if challenge.dify_credential and challenge.dify_credential.api_key_token:
+                    api_key_plaintext = reveal_api_key(
+                        challenge.dify_credential.api_key_token,
+                        current_app.config.get('SECRET_KEY', '')
+                    )
+
                 challenge_data = {
                     'title': challenge.title,
                     'description': challenge.description,
@@ -553,6 +580,7 @@ def competitions_export_all():
                     'dify_config': {
                         'enabled': challenge.dify_config.enabled,
                         'hook_url': challenge.dify_config.base_url,
+                        'api_key': api_key_plaintext,
                         'api_key_masked': challenge.dify_credential.api_key_masked if challenge.dify_credential else ''
                     } if challenge.dify_config else None
                 }
