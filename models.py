@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
@@ -15,6 +16,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+    is_disabled = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -44,10 +46,12 @@ class Competition(db.Model):
     status = db.Column(db.String(20), default='draft')  # draft, running, paused, stopped
     countdown_minutes = db.Column(db.Integer, default=0)  # Countdown duration in minutes
     countdown_started_at = db.Column(db.DateTime)  # When countdown was started
+    pin = db.Column(db.String(6), nullable=False, default=lambda: str(random.randint(100000, 999999)))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
     challenges = db.relationship('Challenge', backref='competition', lazy='dynamic', cascade='all, delete-orphan')
+    access_records = db.relationship('CompetitionAccess', backref='competition', lazy='dynamic', cascade='all, delete-orphan')
     
     def is_running(self):
         """Check if competition is currently running"""
@@ -116,6 +120,22 @@ class Submission(db.Model):
     
     def __repr__(self):
         return f'<Submission {self.id} by User {self.user_id}>'
+
+
+class CompetitionAccess(db.Model):
+    """Tracks which users have unlocked a competition via PIN"""
+    __tablename__ = 'competition_access'
+    __table_args__ = (db.UniqueConstraint('user_id', 'competition_id', name='uq_user_competition'),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    competition_id = db.Column(db.Integer, db.ForeignKey('competitions.id'), nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('competition_access', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<CompetitionAccess user={self.user_id} competition={self.competition_id}>'
 
 
 class SubmissionFile(db.Model):

@@ -19,9 +19,15 @@ class LoginForm(FlaskForm):
     remember = BooleanField('Remember Me')
 
 
+def valid_username(form, field):
+    """Username must contain only letters, digits, underscores, and hyphens."""
+    if not re.match(r'^[A-Za-z0-9_-]+$', field.data):
+        raise ValidationError('Username may only contain letters, numbers, underscores (_) and hyphens (-).')
+
+
 class RegisterForm(FlaskForm):
     """Registration form"""
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80), valid_username])
     email = StringField('Email', validators=[DataRequired(), flexible_email])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     confirm_password = PasswordField('Confirm Password', 

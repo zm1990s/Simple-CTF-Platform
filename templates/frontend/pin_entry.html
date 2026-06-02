@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Enter PIN') }} - {{ competition.name }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card" style="border: 2px solid rgba(0, 170, 255, 0.4); background: var(--bg-secondary);">
+            <div class="card-body p-5 text-center">
+                <div style="font-size: 3rem; color: var(--cyber-primary); margin-bottom: 1rem;">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <h2 class="cyber-text mb-1" style="font-weight: 700; letter-spacing: 2px;">
+                    {{ competition.name }}
+                </h2>
+                <p class="mb-4" style="color: var(--text-secondary);">
+                    {{ _('This competition is PIN-protected. Enter the 6-digit PIN to gain access.') }}
+                </p>
+
+                <form method="POST" action="{{ url_for('frontend.pin_entry', competition_id=competition.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                    <div class="mb-4">
+                        <input
+                            type="text"
+                            name="pin"
+                            id="pin"
+                            class="form-control form-control-lg text-center"
+                            maxlength="6"
+                            minlength="6"
+                            pattern="[0-9]{6}"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            autofocus
+                            placeholder="000000"
+                            required
+                            style="font-size: 2rem; letter-spacing: 0.5rem; border: 2px solid rgba(0, 170, 255, 0.5); background: var(--bg-tertiary); color: var(--text-primary);"
+                        >
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100" style="font-weight: 600; letter-spacing: 1px;">
+                        <i class="bi bi-unlock-fill"></i> {{ _('Unlock Competition') }}
+                    </button>
+                </form>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('frontend.index') }}" class="text-secondary">
+                        <i class="bi bi-arrow-left"></i> {{ _('Back to Competitions') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

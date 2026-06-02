@@ -25,9 +25,11 @@
                 </thead>
                 <tbody>
                     {% for user in users %}
-                        <tr>
+                        <tr class="{% if user.is_disabled %}table-secondary{% endif %}">
                             <td>
-                                {{ user.username }}</td>
+                                {{ user.username }}
+                                {% if user.is_disabled %}<span class="badge bg-danger ms-1">{{ _('Disabled') }}</span>{% endif %}
+                            </td>
                             <td>
                                 {{ user.email }}</td>
                             <td>
@@ -51,6 +53,21 @@
                                         <i class="bi bi-shield{{ '-slash' if user.is_admin else '-check' }}"></i>
                                     </button>
                                 </form>
+                                {% if not user.is_admin and user.id != current_user.id %}
+                                <form method="POST" action="{{ url_for('admin.user_toggle_disable', user_id=user.id) }}" style="display:inline;">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-{{ 'success' if user.is_disabled else 'warning' }}"
+                                            title="{{ _('Enable') if user.is_disabled else _('Disable') }}">
+                                        <i class="bi bi-{{ 'person-check' if user.is_disabled else 'person-slash' }}"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.user_delete', user_id=user.id) }}" style="display:inline;"
+                                      onsubmit="return confirm('{{ _('Are you sure?') }}')">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="{{ _('Delete') }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

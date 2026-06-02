@@ -1,4 +1,8 @@
 {
+  "username_format_hint": {
+    "en": "3\u201380 characters. Letters, numbers, underscores (_) and hyphens (-) only.",
+    "zh": "3\uff5e80 个字符，只允许字母、数字、下划线（_）和连字符（-）。"
+  },
   "Login": {
     "en": "Login",
     "zh": "登录"

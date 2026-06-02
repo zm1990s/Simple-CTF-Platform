@@ -30,6 +30,7 @@
                         <th>{{ _('Name') }}</th>
                         <th>{{ _('Countdown') }}</th>
                         <th>{{ _('Status') }}</th>
+                        <th>{{ _('PIN') }}</th>
                         <th>{{ _('Actions') }}</th>
                     </tr>
                 </thead>
@@ -77,6 +78,14 @@
                                 {% elif competition.status == 'stopped' %}
                                     <span class="badge bg-danger">{{ _('Stopped') }}</span>
                                 {% endif %}
+                            </td>
+                            <td style="white-space: nowrap;">
+                                <code style="font-size: 1.1rem; letter-spacing: 0.15rem; color: var(--cyber-primary);">{{ competition.pin }}</code>
+                                <form method="POST" action="{{ url_for('admin.competition_reset_pin', competition_id=competition.id) }}" style="display:inline; margin-left: 6px;">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="{{ _('Reset PIN') }}">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </form>
                             </td>
                             <td>
                                 <div class="btn-group" role="group">

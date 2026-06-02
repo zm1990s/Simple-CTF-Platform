@@ -20,6 +20,8 @@
                             <div class="invalid-feedback">
                                 {{ form.username.errors[0] }}
                             </div>
+                        {% else %}
+                            <div class="form-text">{{ _('username_format_hint') }}</div>
                         {% endif %}
                     </div>
                     

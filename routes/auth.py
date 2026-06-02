@@ -51,6 +51,9 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         
         if user and user.check_password(form.password.data):
+            if user.is_disabled:
+                flash('This account has been disabled. Please contact an administrator.', 'danger')
+                return render_template('auth/login.html', form=form)
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('frontend.index'))

@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, Challenge, Competition, Submission, SubmissionFile
+from models import db, Challenge, Competition, Submission, SubmissionFile, CompetitionAccess
 from forms import SubmissionForm
 
 frontend_bp = Blueprint('frontend', __name__)
@@ -13,6 +13,14 @@ def allowed_file(filename):
     """Check if file extension is allowed"""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+
+
+def has_pin_access(user_id, competition_id):
+    """Return True if the user has already unlocked this competition via PIN."""
+    return CompetitionAccess.query.filter_by(
+        user_id=user_id,
+        competition_id=competition_id
+    ).first() is not None
 
 
 @frontend_bp.route('/')
@@ -34,6 +42,9 @@ def competition_detail(competition_id):
     if competition.status == 'paused' and not current_user.is_admin:
         flash('This competition is currently paused.', 'warning')
         return redirect(url_for('frontend.index'))
+    # Check PIN access (skip for admins)
+    if not current_user.is_admin and not has_pin_access(current_user.id, competition_id):
+        return redirect(url_for('frontend.pin_entry', competition_id=competition_id))
     challenges = Challenge.query.filter_by(competition_id=competition_id, is_active=True).order_by(Challenge.order_index.asc(), Challenge.id.asc()).all()
     
     # Get user's submissions for this competition
@@ -63,6 +74,9 @@ def challenge_detail(challenge_id):
     if not competition.is_running():
         flash('This competition is not currently active.', 'warning')
         return redirect(url_for('frontend.competition_detail', competition_id=competition.id))
+    # Check PIN access (skip for admins)
+    if not current_user.is_admin and not has_pin_access(current_user.id, competition.id):
+        return redirect(url_for('frontend.pin_entry', competition_id=competition.id))
     
     # Check if countdown has expired
     remaining_time = competition.get_remaining_time()
@@ -135,6 +149,37 @@ def challenge_detail(challenge_id):
                          competition=competition,
                          form=form,
                          submissions=submissions)
+
+
+@frontend_bp.route('/competition/<int:competition_id>/pin', methods=['GET', 'POST'])
+@login_required
+def pin_entry(competition_id):
+    """PIN entry page for a competition"""
+    competition = Competition.query.get_or_404(competition_id)
+
+    if competition.status not in ['running', 'paused'] and not current_user.is_admin:
+        flash('This competition is not available.', 'warning')
+        return redirect(url_for('frontend.index'))
+
+    # Already has access – skip PIN page
+    if current_user.is_admin or has_pin_access(current_user.id, competition_id):
+        return redirect(url_for('frontend.competition_detail', competition_id=competition_id))
+
+    if request.method == 'POST':
+        entered_pin = request.form.get('pin', '').strip()
+        if entered_pin == competition.pin:
+            access = CompetitionAccess(
+                user_id=current_user.id,
+                competition_id=competition_id
+            )
+            db.session.add(access)
+            db.session.commit()
+            flash('Access granted! Welcome to the competition.', 'success')
+            return redirect(url_for('frontend.competition_detail', competition_id=competition_id))
+        else:
+            flash('Incorrect PIN. Please try again.', 'danger')
+
+    return render_template('frontend/pin_entry.html', competition=competition)
 
 
 @frontend_bp.route('/leaderboard/<int:competition_id>')

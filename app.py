@@ -51,7 +51,7 @@ def create_app(config_name='default'):
     def inject_translations():
         def _(text):
             # Get current locale from session
-            locale = session.get('locale', 'en')
+            locale = session.get('locale', 'zh')
             # Return translated text or fallback to original
             if text in translations and locale in translations[text]:
                 return translations[text][locale]

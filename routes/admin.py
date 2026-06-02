@@ -272,6 +272,18 @@ def competition_reset(competition_id):
     return redirect(url_for('admin.competitions'))
 
 
+@admin_bp.route('/competitions/<int:competition_id>/reset-pin', methods=['POST'])
+@admin_required
+def competition_reset_pin(competition_id):
+    """Generate a new PIN for the competition"""
+    import random
+    competition = Competition.query.get_or_404(competition_id)
+    competition.pin = str(random.randint(100000, 999999))
+    db.session.commit()
+    flash(f'New PIN for "{competition.name}": {competition.pin}', 'success')
+    return redirect(url_for('admin.competitions'))
+
+
 @admin_bp.route('/competitions/<int:competition_id>/duplicate', methods=['POST'])
 @admin_required
 def competition_duplicate(competition_id):
@@ -810,6 +822,42 @@ def user_toggle_admin(user_id):
     
     status = 'granted' if user.is_admin else 'revoked'
     flash(f'Admin privileges {status} for user {user.username}.', 'success')
+    return redirect(url_for('admin.users'))
+
+
+@admin_bp.route('/users/<int:user_id>/toggle-disable', methods=['POST'])
+@admin_required
+def user_toggle_disable(user_id):
+    """Enable or disable a user account"""
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash('You cannot disable your own account.', 'danger')
+        return redirect(url_for('admin.users'))
+    if user.is_admin:
+        flash('Admin accounts cannot be disabled.', 'danger')
+        return redirect(url_for('admin.users'))
+    user.is_disabled = not user.is_disabled
+    db.session.commit()
+    action = 'disabled' if user.is_disabled else 'enabled'
+    flash(f'User {user.username} has been {action}.', 'success')
+    return redirect(url_for('admin.users'))
+
+
+@admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def user_delete(user_id):
+    """Delete a user account and all associated data"""
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash('You cannot delete your own account.', 'danger')
+        return redirect(url_for('admin.users'))
+    if user.is_admin:
+        flash('Admin accounts cannot be deleted.', 'danger')
+        return redirect(url_for('admin.users'))
+    username = user.username
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'User {username} has been deleted.', 'success')
     return redirect(url_for('admin.users'))
 
 
