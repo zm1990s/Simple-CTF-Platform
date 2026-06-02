@@ -69,15 +69,15 @@ def challenge_detail(challenge_id):
     """Challenge detail page with submission form"""
     challenge = Challenge.query.get_or_404(challenge_id)
     competition = challenge.competition
-    
+
     # Check if competition is running
-    if not competition.is_running():
+    if not competition.is_running() and not current_user.is_admin:
         flash('This competition is not currently active.', 'warning')
         return redirect(url_for('frontend.competition_detail', competition_id=competition.id))
     # Check PIN access (skip for admins)
     if not current_user.is_admin and not has_pin_access(current_user.id, competition.id):
         return redirect(url_for('frontend.pin_entry', competition_id=competition.id))
-    
+
     # Check if countdown has expired
     remaining_time = competition.get_remaining_time()
     if remaining_time is not None and remaining_time <= 0:
@@ -86,17 +86,10 @@ def challenge_detail(challenge_id):
         db.session.commit()
         flash('The competition countdown has expired. Submissions are no longer accepted.', 'warning')
         return redirect(url_for('frontend.competition_detail', competition_id=competition.id))
-    
+
     form = SubmissionForm()
-    
+
     if form.validate_on_submit():
-        # Double-check countdown hasn't expired during form submission
-        remaining_time = competition.get_remaining_time()
-        if remaining_time is not None and remaining_time <= 0:
-            competition.status = 'paused'
-            db.session.commit()
-            flash('The competition countdown has expired. Your submission cannot be accepted.', 'warning')
-            return redirect(url_for('frontend.competition_detail', competition_id=competition.id))
         
         # Create submission
         submission = Submission(
