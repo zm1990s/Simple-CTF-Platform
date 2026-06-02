@@ -85,6 +85,16 @@ def trigger_external_hook(submission_id):
             answer_text = dify_response.get('answer', '')
             
             try:
+                # Strip markdown code fences if Dify wraps the response in ```json ... ```
+                stripped = answer_text.strip()
+                if stripped.startswith('```'):
+                    # Remove opening fence (```json or ```)
+                    stripped = stripped.split('\n', 1)[1] if '\n' in stripped else stripped[3:]
+                    # Remove closing fence
+                    if stripped.rstrip().endswith('```'):
+                        stripped = stripped.rstrip()[:-3].rstrip()
+                    answer_text = stripped
+
                 # Parse the answer JSON string
                 answer_data = json.loads(answer_text)
                 
