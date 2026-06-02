@@ -29,6 +29,34 @@
                 <label class="form-label">{{ _('Points') }}</label>
                 {{ form.points(class="form-control", type="number") }}
             </div>
+
+            <div class="card mb-3 border-info">
+                <div class="card-header bg-info bg-opacity-10">
+                    {{ _('Challenge-Specific Dify Integration') }}
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        {{ form.use_custom_dify(class="form-check-input", id="use-custom-dify") }}
+                        <label class="form-check-label" for="use-custom-dify">
+                            {{ _('Enable this challenge to use its own Dify endpoint') }}
+                        </label>
+                    </div>
+
+                    <div id="dify-config-fields">
+                        <div class="mb-3">
+                            <label class="form-label">{{ _('Dify Base URL') }}</label>
+                            {{ form.dify_base_url(class="form-control", placeholder="https://your-dify-host") }}
+                            <small class="text-muted">{{ _('Example: https://dify.example.com') }}</small>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label">{{ _('Dify API Path') }}</label>
+                            {{ form.dify_api_path(class="form-control", placeholder="/v1/chat-messages") }}
+                            <small class="text-muted">{{ _('Will be appended to Base URL. Keep leading slash.') }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="mb-3">
                 <div class="row">
@@ -61,6 +89,18 @@
     const editor = document.getElementById('markdown-editor');
     const preview = document.getElementById('markdown-preview');
     const imageUpload = document.getElementById('image-upload');
+    const useCustomDify = document.getElementById('use-custom-dify');
+    const difyConfigFields = document.getElementById('dify-config-fields');
+
+    function toggleDifyFields() {
+        if (!useCustomDify || !difyConfigFields) return;
+        difyConfigFields.style.display = useCustomDify.checked ? 'block' : 'none';
+    }
+
+    if (useCustomDify) {
+        useCustomDify.addEventListener('change', toggleDifyFields);
+        toggleDifyFields();
+    }
     
     // Update preview on input
     editor.addEventListener('input', function() {

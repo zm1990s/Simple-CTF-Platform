@@ -97,9 +97,26 @@ class Challenge(db.Model):
     
     # Relationships
     submissions = db.relationship('Submission', backref='challenge', lazy='dynamic', cascade='all, delete-orphan')
+    dify_config = db.relationship('ChallengeDifyConfig', backref='challenge', uselist=False, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Challenge {self.title}>'
+
+
+class ChallengeDifyConfig(db.Model):
+    """Per-challenge Dify endpoint override settings"""
+    __tablename__ = 'challenge_dify_configs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenges.id'), nullable=False, unique=True)
+    enabled = db.Column(db.Boolean, default=False)
+    base_url = db.Column(db.String(255))
+    api_path = db.Column(db.String(255), default='/v1/chat-messages')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ChallengeDifyConfig challenge={self.challenge_id} enabled={self.enabled}>'
 
 
 class Submission(db.Model):

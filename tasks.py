@@ -25,6 +25,25 @@ celery.conf.update(
 )
 
 
+def _normalize_api_path(path_value):
+    """Normalize API path to `/...` format with default Dify chat endpoint."""
+    path_value = (path_value or '').strip()
+    if not path_value:
+        return '/v1/chat-messages'
+    return path_value if path_value.startswith('/') else f'/{path_value}'
+
+
+def _build_hook_url(challenge, app):
+    """Return challenge-specific hook URL if enabled, otherwise global hook URL."""
+    challenge_cfg = getattr(challenge, 'dify_config', None)
+    if challenge_cfg and challenge_cfg.enabled and (challenge_cfg.base_url or '').strip():
+        base_url = challenge_cfg.base_url.strip().rstrip('/')
+        api_path = _normalize_api_path(challenge_cfg.api_path)
+        return f'{base_url}{api_path}'
+
+    return (app.config.get('EXTERNAL_HOOK_URL') or '').strip()
+
+
 @celery.task
 def trigger_external_hook(submission_id):
     """Trigger Dify workflow for automated submission review and scoring"""
@@ -67,8 +86,14 @@ def trigger_external_hook(submission_id):
         
         # Send POST request to Dify API
         try:
-            hook_url = app.config['EXTERNAL_HOOK_URL']
+            hook_url = _build_hook_url(challenge, app)
             api_key = app.config.get('DIFY_API_KEY', '')
+
+            if not hook_url:
+                return {
+                    'success': False,
+                    'error': 'No Dify hook URL configured (neither challenge-specific nor global).'
+                }
             
             headers = {
                 'Authorization': f'Bearer {api_key}',

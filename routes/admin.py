@@ -7,7 +7,7 @@ from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, send_file, session
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, User, Challenge, Competition, Submission, PlatformSettings
+from models import db, User, Challenge, Competition, Submission, PlatformSettings, ChallengeDifyConfig
 from forms import ChallengeForm, CompetitionForm, ReviewForm, PlatformSettingsForm, ResetPasswordForm
 
 admin_bp = Blueprint('admin', __name__)
@@ -37,6 +37,14 @@ def admin_required(f):
             return redirect(url_for('frontend.index'))
         return f(*args, **kwargs)
     return decorated_function
+
+
+def _normalize_dify_path(path_value):
+    """Normalize API path to `/...` format with a sensible default."""
+    path_value = (path_value or '').strip()
+    if not path_value:
+        return '/v1/chat-messages'
+    return path_value if path_value.startswith('/') else f'/{path_value}'
 
 
 @admin_bp.route('/')
@@ -316,6 +324,15 @@ def competition_duplicate(competition_id):
             is_active=challenge.is_active
         )
         db.session.add(new_challenge)
+        db.session.flush()
+
+        if challenge.dify_config:
+            db.session.add(ChallengeDifyConfig(
+                challenge_id=new_challenge.id,
+                enabled=challenge.dify_config.enabled,
+                base_url=challenge.dify_config.base_url,
+                api_path=challenge.dify_config.api_path
+            ))
     
     db.session.commit()
     flash(f'Competition duplicated as "{new_competition.name}".', 'success')
@@ -349,7 +366,12 @@ def competition_export(competition_id):
             'points': challenge.points,
             'category': challenge.category,
             'order_index': challenge.order_index,
-            'is_active': challenge.is_active
+            'is_active': challenge.is_active,
+            'dify_config': {
+                'enabled': challenge.dify_config.enabled,
+                'base_url': challenge.dify_config.base_url,
+                'api_path': challenge.dify_config.api_path
+            } if challenge.dify_config else None
         }
         competition_data['challenges'].append(challenge_data)
     
@@ -422,6 +444,16 @@ def competition_import():
                     is_active=challenge_data.get('is_active', True)
                 )
                 db.session.add(challenge)
+                db.session.flush()
+
+                imported_dify = challenge_data.get('dify_config')
+                if imported_dify:
+                    db.session.add(ChallengeDifyConfig(
+                        challenge_id=challenge.id,
+                        enabled=bool(imported_dify.get('enabled', False)),
+                        base_url=imported_dify.get('base_url', ''),
+                        api_path=_normalize_dify_path(imported_dify.get('api_path', '/v1/chat-messages'))
+                    ))
                 challenge_count += 1
             
             db.session.commit()
@@ -451,6 +483,11 @@ def challenge_export(challenge_id):
         'points': challenge.points,
         'category': challenge.category,
         'is_active': challenge.is_active,
+        'dify_config': {
+            'enabled': challenge.dify_config.enabled,
+            'base_url': challenge.dify_config.base_url,
+            'api_path': challenge.dify_config.api_path
+        } if challenge.dify_config else None,
         'competition_name': challenge.competition.name,
         'export_date': datetime.utcnow().isoformat()
     }
@@ -507,7 +544,12 @@ def competitions_export_all():
                     'points': challenge.points,
                     'category': challenge.category,
                     'order_index': challenge.order_index,
-                    'is_active': challenge.is_active
+                    'is_active': challenge.is_active,
+                    'dify_config': {
+                        'enabled': challenge.dify_config.enabled,
+                        'base_url': challenge.dify_config.base_url,
+                        'api_path': challenge.dify_config.api_path
+                    } if challenge.dify_config else None
                 }
                 competition_data['challenges'].append(challenge_data)
             
@@ -553,6 +595,9 @@ def challenge_new():
     """Create new challenge"""
     form = ChallengeForm()
     form.competition_id.choices = [(c.id, c.name) for c in Competition.query.all()]
+
+    if request.method == 'GET' and not form.dify_api_path.data:
+        form.dify_api_path.data = '/v1/chat-messages'
     
     if form.validate_on_submit():
         challenge = Challenge(
@@ -563,6 +608,17 @@ def challenge_new():
             competition_id=form.competition_id.data
         )
         db.session.add(challenge)
+        db.session.flush()
+
+        if form.use_custom_dify.data:
+            dify_config = ChallengeDifyConfig(
+                challenge_id=challenge.id,
+                enabled=True,
+                base_url=(form.dify_base_url.data or '').strip(),
+                api_path=_normalize_dify_path(form.dify_api_path.data)
+            )
+            db.session.add(dify_config)
+
         db.session.commit()
         
         flash('Challenge created successfully.', 'success')
@@ -578,6 +634,15 @@ def challenge_edit(challenge_id):
     challenge = Challenge.query.get_or_404(challenge_id)
     form = ChallengeForm(obj=challenge)
     form.competition_id.choices = [(c.id, c.name) for c in Competition.query.all()]
+
+    if request.method == 'GET':
+        existing_config = challenge.dify_config
+        if existing_config:
+            form.use_custom_dify.data = existing_config.enabled
+            form.dify_base_url.data = existing_config.base_url
+            form.dify_api_path.data = existing_config.api_path
+        elif not form.dify_api_path.data:
+            form.dify_api_path.data = '/v1/chat-messages'
     
     if form.validate_on_submit():
         challenge.title = form.title.data
@@ -585,6 +650,17 @@ def challenge_edit(challenge_id):
         challenge.points = form.points.data
         challenge.category = form.category.data
         challenge.competition_id = form.competition_id.data
+
+        existing_config = challenge.dify_config
+        if form.use_custom_dify.data:
+            if not existing_config:
+                existing_config = ChallengeDifyConfig(challenge_id=challenge.id)
+                db.session.add(existing_config)
+            existing_config.enabled = True
+            existing_config.base_url = (form.dify_base_url.data or '').strip()
+            existing_config.api_path = _normalize_dify_path(form.dify_api_path.data)
+        elif existing_config:
+            existing_config.enabled = False
         
         db.session.commit()
         flash('Challenge updated successfully.', 'success')
@@ -644,6 +720,16 @@ def challenge_copy(challenge_id):
     )
     
     db.session.add(new_challenge)
+    db.session.flush()
+
+    if original.dify_config:
+        db.session.add(ChallengeDifyConfig(
+            challenge_id=new_challenge.id,
+            enabled=original.dify_config.enabled,
+            base_url=original.dify_config.base_url,
+            api_path=original.dify_config.api_path
+        ))
+
     db.session.commit()
     
     flash(f'Challenge copied successfully as "{new_title}".', 'success')
