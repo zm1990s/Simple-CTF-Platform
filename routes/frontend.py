@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, abort
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from models import db, Challenge, Competition, Submission, SubmissionFile, CompetitionAccess
@@ -253,3 +253,13 @@ def my_submissions():
     ).all()
     
     return render_template('frontend/my_submissions.html', submissions=submissions)
+
+
+@frontend_bp.route('/my-submissions/<int:submission_id>')
+@login_required
+def my_submission_detail(submission_id):
+    """User's submission detail view"""
+    submission = Submission.query.get_or_404(submission_id)
+    if submission.user_id != current_user.id:
+        abort(403)
+    return render_template('frontend/my_submission_detail.html', submission=submission)

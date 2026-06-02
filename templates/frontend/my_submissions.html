@@ -15,6 +15,7 @@
                     <th>{{ _('Submitted At') }}</th>
                     <th>{{ _('Status') }}</th>
                     <th>{{ _('Points') }}</th>
+                    <th>{{ _('Details') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,6 +38,11 @@
                             {% endif %}
                         </td>
                         <td>{{ submission.points_awarded }}</td>
+                        <td>
+                            <a href="{{ url_for('frontend.my_submission_detail', submission_id=submission.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> {{ _('View') }}
+                            </a>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>

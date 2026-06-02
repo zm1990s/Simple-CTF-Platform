@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Submission Detail') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ _('Submission Detail') }}</h1>
+    <a href="{{ url_for('frontend.my_submissions') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Back to My Submissions') }}
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{{ _('Submission Information') }}</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th style="width: 180px;">{{ _('Challenge') }}</th>
+                        <td>
+                            <a href="{{ url_for('frontend.challenge_detail', challenge_id=submission.challenge_id) }}">
+                                {{ submission.challenge.title }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Competition') }}</th>
+                        <td>{{ submission.challenge.competition.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Submitted At') }}</th>
+                        <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Status') }}</th>
+                        <td>
+                            {% if submission.status == 'approved' %}
+                                <span class="badge bg-success">{{ _('Approved') }}</span>
+                            {% elif submission.status == 'rejected' %}
+                                <span class="badge bg-danger">{{ _('Rejected') }}</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">{{ _('Pending') }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Points Awarded') }}</th>
+                        <td>{{ submission.points_awarded }}</td>
+                    </tr>
+                    {% if submission.reviewed_at %}
+                    <tr>
+                        <th>{{ _('Reviewed At') }}</th>
+                        <td>{{ submission.reviewed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Reviewed By') }}</th>
+                        <td>{{ submission.reviewed_by_name or '-' }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        {% if submission.answer_text %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{{ _('Your Answer') }}</h5>
+            </div>
+            <div class="card-body">
+                <div style="background: var(--bg-tertiary); color: var(--text-primary); padding: 15px; border-radius: 5px; white-space: pre-wrap;">{{ submission.answer_text }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if submission.files.count() > 0 %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{{ _('Submitted Files') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for file in submission.files %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-file-earmark"></i> {{ file.filename }}
+                            {% if file.uploaded_at %}
+                            <small class="text-muted d-block">
+                                {{ _('Uploaded') }}: {{ file.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
+                            </small>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('uploaded_file', filename=file.filepath) }}"
+                           class="btn btn-sm btn-primary"
+                           target="_blank">
+                            <i class="bi bi-download"></i> {{ _('View') }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
