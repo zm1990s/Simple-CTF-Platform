@@ -44,7 +44,6 @@
                                 <tr>
                                     <th class="text-center" style="width: 100px; padding: 1.2rem;">{{ _('Rank') }}</th>
                                     <th style="padding: 1.2rem;">{{ _('Username') }}</th>
-                                    <th style="padding: 1.2rem;">{{ _('Team') }}</th>
                                     <th class="text-center" style="width: 150px; padding: 1.2rem;">{{ _('Total Points') }}</th>
                                     <th class="text-center" style="width: 200px; padding: 1.2rem;">{{ _('Last Solve') }}</th>
                                 </tr>
@@ -79,16 +78,6 @@
                                                 <i class="bi bi-person-circle" style="color: var(--cyber-secondary);"></i>
                                                 {{ entry.user.username }}
                                             </strong>
-                                        </td>
-                                        <td class="align-middle" style="padding: 1.2rem;">
-                                            {% if entry.team %}
-                                                <a href="{{ url_for('frontend.team_leaderboard_detail', competition_id=competition.id, team_id=entry.team.id) }}"
-                                                   class="badge bg-info text-decoration-none" style="font-size: 0.9rem;">
-                                                    <i class="bi bi-shield-fill"></i> {{ entry.team.name }}
-                                                </a>
-                                            {% else %}
-                                                <span class="text-muted small">—</span>
-                                            {% endif %}
                                         </td>
                                         <td class="text-center align-middle" style="padding: 1.2rem;">
                                             <span class="badge bg-primary" style="font-size: 1.2rem; padding: 0.6rem 1.2rem;">

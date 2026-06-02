@@ -698,5 +698,153 @@
   "Details": {
     "en": "Details",
     "zh": "详情"
+  },
+  "Teams": {
+    "en": "Teams",
+    "zh": "队伍"
+  },
+  "Individual": {
+    "en": "Individual",
+    "zh": "个人"
+  },
+  "No teams have participated yet.": {
+    "en": "No teams have participated yet.",
+    "zh": "暂无队伍参与。"
+  },
+  "My Team": {
+    "en": "My Team",
+    "zh": "我的队伍"
+  },
+  "All Teams": {
+    "en": "All Teams",
+    "zh": "所有队伍"
+  },
+  "Create Team": {
+    "en": "Create Team",
+    "zh": "创建队伍"
+  },
+  "Create a New Team": {
+    "en": "Create a New Team",
+    "zh": "创建新队伍"
+  },
+  "Team Name": {
+    "en": "Team Name",
+    "zh": "队伍名称"
+  },
+  "Enter a unique team name": {
+    "en": "Enter a unique team name",
+    "zh": "输入唯一的队伍名称"
+  },
+  "Optional team description": {
+    "en": "Optional team description",
+    "zh": "可选的队伍描述"
+  },
+  "Join a Team by Invite Code": {
+    "en": "Join a Team by Invite Code",
+    "zh": "通过邀请码加入队伍"
+  },
+  "Enter invite code": {
+    "en": "Enter invite code",
+    "zh": "输入邀请码"
+  },
+  "Join": {
+    "en": "Join",
+    "zh": "加入"
+  },
+  "No teams yet. Be the first to create one!": {
+    "en": "No teams yet. Be the first to create one!",
+    "zh": "暂无队伍，快来创建第一个吧！"
+  },
+  "Your Team": {
+    "en": "Your Team",
+    "zh": "我的队伍"
+  },
+  "Team Info": {
+    "en": "Team Info",
+    "zh": "队伍信息"
+  },
+  "Captain": {
+    "en": "Captain",
+    "zh": "队长"
+  },
+  "Members": {
+    "en": "Members",
+    "zh": "成员"
+  },
+  "Member": {
+    "en": "Member",
+    "zh": "成员"
+  },
+  "Created": {
+    "en": "Created",
+    "zh": "创建时间"
+  },
+  "Invite Code": {
+    "en": "Invite Code",
+    "zh": "邀请码"
+  },
+  "Share this code with others so they can join your team.": {
+    "en": "Share this code with others so they can join your team.",
+    "zh": "将此邀请码分享给其他人，邀请他们加入你的队伍。"
+  },
+  "Role": {
+    "en": "Role",
+    "zh": "角色"
+  },
+  "Joined": {
+    "en": "Joined",
+    "zh": "加入时间"
+  },
+  "Leave Team": {
+    "en": "Leave Team",
+    "zh": "退出队伍"
+  },
+  "Are you sure you want to leave this team?": {
+    "en": "Are you sure you want to leave this team?",
+    "zh": "确定要退出这个队伍吗？"
+  },
+  "Remove this member?": {
+    "en": "Remove this member?",
+    "zh": "确定移除该成员吗？"
+  },
+  "Team Leaderboard": {
+    "en": "Team Leaderboard",
+    "zh": "队伍排行榜"
+  },
+  "Back to Leaderboard": {
+    "en": "Back to Leaderboard",
+    "zh": "返回排行榜"
+  },
+  "Team Total Points": {
+    "en": "Team Total Points",
+    "zh": "队伍总分"
+  },
+  "(deduplicated across members)": {
+    "en": "(deduplicated across members)",
+    "zh": "（成员间去重）"
+  },
+  "Member Scores": {
+    "en": "Member Scores",
+    "zh": "成员得分"
+  },
+  "Challenges Solved": {
+    "en": "Challenges Solved",
+    "zh": "已解题数"
+  },
+  "Individual Points": {
+    "en": "Individual Points",
+    "zh": "个人得分"
+  },
+  "Solved Challenges": {
+    "en": "Solved Challenges",
+    "zh": "已解题目"
+  },
+  "No members have scored yet.": {
+    "en": "No members have scored yet.",
+    "zh": "暂无成员得分。"
+  },
+  "Team total is calculated by taking the highest score for each challenge across all members — duplicates are not counted twice.": {
+    "en": "Team total is calculated by taking the highest score for each challenge across all members — duplicates are not counted twice.",
+    "zh": "队伍总分取各成员在每道题目上的最高分之和，重复答对同一题只计一次。"
   }
 }

@@ -224,20 +224,25 @@ def leaderboard(competition_id):
     ).all()
 
     from models import User
-    # Build a map: user_id → team (for individual entries)
+    # Build a map: user_id → team
     all_memberships = TeamMember.query.all()
     user_to_team = {m.user_id: m.team for m in all_memberships}
+    team_user_ids = set(user_to_team.keys())
 
     leaderboard_data = []
-    for rank, (user_id, total_points, last_solve_time) in enumerate(results, 1):
+    rank = 1
+    for (user_id, total_points, last_solve_time) in results:
+        if user_id in team_user_ids:
+            continue  # skip users who are in a team
         user = User.query.get(user_id)
         leaderboard_data.append({
             'rank': rank,
             'user': user,
             'total_points': int(total_points or 0),
             'last_solve_time': last_solve_time,
-            'team': user_to_team.get(user_id),
+            'team': None,
         })
+        rank += 1
 
     # ── Team leaderboard ────────────────────────────────────────────────────
     # Per team per challenge: take the best score from any member (deduplication).
