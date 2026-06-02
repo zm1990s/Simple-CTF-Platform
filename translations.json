@@ -674,5 +674,29 @@
   "Countdown will start when competition begins": {
     "en": "Countdown will start when competition begins",
     "zh": "倒计时将在竞赛开始时启动"
+  },
+  "Submission Detail": {
+    "en": "Submission Detail",
+    "zh": "提交详情"
+  },
+  "Submission Information": {
+    "en": "Submission Information",
+    "zh": "提交信息"
+  },
+  "Your Answer": {
+    "en": "Your Answer",
+    "zh": "你的答案"
+  },
+  "Back to My Submissions": {
+    "en": "Back to My Submissions",
+    "zh": "返回我的提交"
+  },
+  "View": {
+    "en": "View",
+    "zh": "查看"
+  },
+  "Details": {
+    "en": "Details",
+    "zh": "详情"
   }
 }

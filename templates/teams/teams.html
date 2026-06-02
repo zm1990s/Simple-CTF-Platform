@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Teams') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people-fill"></i> {{ _('Teams') }}</h1>
+    <div>
+        {% if my_membership %}
+            <a href="{{ url_for('teams.my_team') }}" class="btn btn-primary">
+                <i class="bi bi-person-badge"></i> {{ _('My Team') }}
+            </a>
+        {% else %}
+            <a href="{{ url_for('teams.create_team') }}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> {{ _('Create Team') }}
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if not my_membership %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-key"></i> {{ _('Join a Team by Invite Code') }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('teams.join_team') }}" class="d-flex gap-2">
+            <input type="text" name="invite_code" class="form-control" style="max-width: 220px;"
+                   placeholder="{{ _('Enter invite code') }}" maxlength="8" required>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-box-arrow-in-right"></i> {{ _('Join') }}
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if teams %}
+<div class="row">
+    {% for team in teams %}
+    <div class="col-md-6 mb-3">
+        <div class="card h-100 {% if my_membership and my_membership.team_id == team.id %}border-primary{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-shield-fill"></i> {{ team.name }}</strong>
+                <span class="badge bg-secondary">
+                    <i class="bi bi-person"></i> {{ team.members.count() }}
+                </span>
+            </div>
+            <div class="card-body">
+                {% if team.description %}
+                    <p class="text-muted small mb-2">{{ team.description }}</p>
+                {% endif %}
+                <small class="text-muted">
+                    <i class="bi bi-person-fill-gear"></i> {{ _('Captain') }}: {{ team.captain.username }}
+                </small>
+                {% if my_membership and my_membership.team_id == team.id %}
+                    <br><span class="badge bg-primary mt-1">{{ _('Your Team') }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    {{ _('No teams yet. Be the first to create one!') }}
+</div>
+{% endif %}
+{% endblock %}

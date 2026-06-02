@@ -86,11 +86,13 @@ def create_app(config_name='default'):
     from routes.frontend import frontend_bp
     from routes.admin import admin_bp
     from routes.api import api_bp
-    
+    from routes.teams import teams_bp
+
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(frontend_bp, url_prefix='/')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(teams_bp, url_prefix='/')
     
     # Serve uploaded files
     from flask import send_from_directory

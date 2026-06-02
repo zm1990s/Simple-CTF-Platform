@@ -40,6 +40,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('frontend.my_submissions') }}">{{ _('My Submissions') }}</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.teams_list') }}">{{ _('Teams') }}</a>
+                        </li>
                         {% if current_user.is_admin %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('admin.dashboard') }}">{{ _('Admin') }}</a>

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ team.name }} - {{ _('Team Leaderboard') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-shield-fill"></i> {{ team.name }}</h1>
+        {% if team.description %}
+            <p class="text-muted mb-0">{{ team.description }}</p>
+        {% endif %}
+    </div>
+    <a href="{{ url_for('frontend.leaderboard', competition_id=competition.id) }}#teams"
+       class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> {{ _('Back to Leaderboard') }}
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; font-weight: bold; color: var(--bs-success);">
+                    {{ team_total }}
+                </div>
+                <div class="text-muted">{{ _('Team Total Points') }}</div>
+                <small class="text-muted">{{ _('(deduplicated across members)') }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; font-weight: bold;">{{ members|length }}</div>
+                <div class="text-muted">{{ _('Members') }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; font-weight: bold; color: var(--bs-info);">
+                    {{ competition.name }}
+                </div>
+                <div class="text-muted">{{ _('Competition') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-people"></i> {{ _('Member Scores') }}</h5>
+    </div>
+    {% if members %}
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>{{ _('Member') }}</th>
+                    <th class="text-center">{{ _('Challenges Solved') }}</th>
+                    <th class="text-center">{{ _('Individual Points') }}</th>
+                    <th>{{ _('Solved Challenges') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in members %}
+                <tr>
+                    <td class="align-middle">
+                        <strong>
+                            <i class="bi bi-person-circle"></i> {{ m.user.username }}
+                        </strong>
+                        {% if m.is_captain %}
+                            <span class="badge bg-warning text-dark ms-1">
+                                <i class="bi bi-star-fill"></i> {{ _('Captain') }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center align-middle">
+                        <span class="badge bg-secondary">{{ m.challenges|length }}</span>
+                    </td>
+                    <td class="text-center align-middle">
+                        <span class="badge bg-primary" style="font-size: 1rem; padding: 0.4rem 0.8rem;">
+                            {{ m.individual_total }}
+                        </span>
+                    </td>
+                    <td class="align-middle">
+                        {% if m.challenges %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for ch in m.challenges %}
+                                    <span class="badge bg-light text-dark border" title="{{ ch.points }} pts">
+                                        {{ ch.title }} <span class="text-success">({{ ch.points }})</span>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card-body">
+        <p class="text-muted text-center mb-0">{{ _('No members have scored yet.') }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="alert alert-info mt-3 small">
+    <i class="bi bi-info-circle"></i>
+    {{ _('Team total is calculated by taking the highest score for each challenge across all members — duplicates are not counted twice.') }}
+</div>
+{% endblock %}

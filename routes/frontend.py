@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, abort
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from models import db, Challenge, Competition, Submission, SubmissionFile, CompetitionAccess
+from models import db, Challenge, Competition, Submission, SubmissionFile, CompetitionAccess, Team, TeamMember
 from forms import SubmissionForm
 
 frontend_bp = Blueprint('frontend', __name__)
@@ -177,14 +177,13 @@ def pin_entry(competition_id):
 
 @frontend_bp.route('/leaderboard/<int:competition_id>')
 def leaderboard(competition_id):
-    """Competition leaderboard"""
+    """Competition leaderboard — individual and team views."""
     competition = Competition.query.get_or_404(competition_id)
-    
-    # Calculate scores for all users
-    # Strategy: For each user-challenge pair, only count the highest score
+
+    # ── Individual leaderboard ──────────────────────────────────────────────
     from sqlalchemy import func
-    
-    # Subquery to get max score per user per challenge
+    from collections import defaultdict
+
     max_scores_subquery = db.session.query(
         Submission.user_id,
         Submission.challenge_id,
@@ -196,16 +195,14 @@ def leaderboard(competition_id):
         Submission.user_id,
         Submission.challenge_id
     ).subquery()
-    
-    # Sum the max scores per user
+
     scores = db.session.query(
         max_scores_subquery.c.user_id,
         func.sum(max_scores_subquery.c.max_points).label('total_points')
     ).group_by(
         max_scores_subquery.c.user_id
     ).subquery()
-    
-    # Get last solve time for each user
+
     last_solve_subquery = db.session.query(
         Submission.user_id,
         func.max(Submission.reviewed_at).label('last_solve_time')
@@ -213,8 +210,7 @@ def leaderboard(competition_id):
         Challenge.competition_id == competition_id,
         Submission.status == 'approved'
     ).group_by(Submission.user_id).subquery()
-    
-    # Join to get final leaderboard with ranking
+
     results = db.session.query(
         scores.c.user_id,
         scores.c.total_points,
@@ -226,9 +222,12 @@ def leaderboard(competition_id):
         scores.c.total_points.desc(),
         last_solve_subquery.c.last_solve_time.asc()
     ).all()
-    
-    # Get user details
+
     from models import User
+    # Build a map: user_id → team (for individual entries)
+    all_memberships = TeamMember.query.all()
+    user_to_team = {m.user_id: m.team for m in all_memberships}
+
     leaderboard_data = []
     for rank, (user_id, total_points, last_solve_time) in enumerate(results, 1):
         user = User.query.get(user_id)
@@ -236,12 +235,125 @@ def leaderboard(competition_id):
             'rank': rank,
             'user': user,
             'total_points': int(total_points or 0),
-            'last_solve_time': last_solve_time
+            'last_solve_time': last_solve_time,
+            'team': user_to_team.get(user_id),
         })
-    
-    return render_template('frontend/leaderboard.html', 
-                         competition=competition,
-                         leaderboard=leaderboard_data)
+
+    # ── Team leaderboard ────────────────────────────────────────────────────
+    # Per team per challenge: take the best score from any member (deduplication).
+    team_challenge_rows = db.session.query(
+        TeamMember.team_id,
+        Submission.challenge_id,
+        func.max(Submission.points_awarded).label('max_points'),
+        func.max(Submission.reviewed_at).label('last_solve')
+    ).join(
+        Submission, Submission.user_id == TeamMember.user_id
+    ).join(
+        Challenge, Challenge.id == Submission.challenge_id
+    ).filter(
+        Challenge.competition_id == competition_id,
+        Submission.status == 'approved'
+    ).group_by(
+        TeamMember.team_id,
+        Submission.challenge_id
+    ).all()
+
+    team_totals = defaultdict(int)
+    team_last_solve = defaultdict(lambda: None)
+    for row in team_challenge_rows:
+        team_totals[row.team_id] += row.max_points
+        if team_last_solve[row.team_id] is None or (
+            row.last_solve and row.last_solve > team_last_solve[row.team_id]
+        ):
+            team_last_solve[row.team_id] = row.last_solve
+
+    team_leaderboard = []
+    for team_id, total_points in sorted(
+        team_totals.items(),
+        key=lambda x: (-x[1], team_last_solve[x[0]] or datetime.min)
+    ):
+        team = Team.query.get(team_id)
+        if team:
+            team_leaderboard.append({
+                'team': team,
+                'total_points': total_points,
+                'last_solve_time': team_last_solve[team_id],
+                'member_count': team.members.count(),
+            })
+
+    for i, entry in enumerate(team_leaderboard, 1):
+        entry['rank'] = i
+
+    return render_template('frontend/leaderboard.html',
+                           competition=competition,
+                           leaderboard=leaderboard_data,
+                           team_leaderboard=team_leaderboard)
+
+
+@frontend_bp.route('/leaderboard/<int:competition_id>/team/<int:team_id>')
+def team_leaderboard_detail(competition_id, team_id):
+    """Team breakdown in leaderboard context."""
+    competition = Competition.query.get_or_404(competition_id)
+    team = Team.query.get_or_404(team_id)
+
+    from sqlalchemy import func
+    from collections import defaultdict
+
+    members = TeamMember.query.filter_by(team_id=team_id).order_by(TeamMember.joined_at).all()
+
+    # Per team per challenge: best score (for team total calculation)
+    challenge_best = defaultdict(int)
+    team_challenge_rows = db.session.query(
+        Submission.challenge_id,
+        func.max(Submission.points_awarded).label('max_points')
+    ).join(
+        TeamMember, TeamMember.user_id == Submission.user_id
+    ).join(
+        Challenge, Challenge.id == Submission.challenge_id
+    ).filter(
+        TeamMember.team_id == team_id,
+        Challenge.competition_id == competition_id,
+        Submission.status == 'approved'
+    ).group_by(Submission.challenge_id).all()
+
+    for row in team_challenge_rows:
+        challenge_best[row.challenge_id] = row.max_points
+
+    team_total = sum(challenge_best.values())
+
+    # Per-member individual stats
+    member_data = []
+    for membership in members:
+        user = membership.user
+        user_rows = db.session.query(
+            Submission.challenge_id,
+            Challenge.title,
+            func.max(Submission.points_awarded).label('max_points')
+        ).join(
+            Challenge, Challenge.id == Submission.challenge_id
+        ).filter(
+            Challenge.competition_id == competition_id,
+            Submission.status == 'approved',
+            Submission.user_id == user.id
+        ).group_by(Submission.challenge_id, Challenge.title).all()
+
+        individual_total = sum(r.max_points for r in user_rows)
+        member_data.append({
+            'user': user,
+            'individual_total': individual_total,
+            'challenges': [{'challenge_id': r.challenge_id,
+                            'title': r.title,
+                            'points': r.max_points} for r in user_rows],
+            'is_captain': (user.id == team.captain_id),
+        })
+
+    member_data.sort(key=lambda x: -x['individual_total'])
+
+    return render_template('frontend/team_leaderboard_detail.html',
+                           competition=competition,
+                           team=team,
+                           members=member_data,
+                           team_total=team_total)
 
 
 @frontend_bp.route('/my-submissions')

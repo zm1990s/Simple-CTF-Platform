@@ -1,8 +1,13 @@
 import random
+import string
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+
+
+def _generate_invite_code():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
 db = SQLAlchemy()
 
@@ -213,3 +218,39 @@ class SubmissionFileHistory(db.Model):
     
     def __repr__(self):
         return f'<SubmissionFileHistory {self.filename}>'
+
+
+class Team(db.Model):
+    """Team model - users can create and join teams"""
+    __tablename__ = 'teams'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    invite_code = db.Column(db.String(8), unique=True, nullable=False,
+                            default=_generate_invite_code)
+    captain_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    captain = db.relationship('User', foreign_keys=[captain_id], backref='led_teams')
+    members = db.relationship('TeamMember', backref='team', lazy='dynamic',
+                              cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Team {self.name}>'
+
+
+class TeamMember(db.Model):
+    """Team membership - each user belongs to at most one team"""
+    __tablename__ = 'team_members'
+    __table_args__ = (db.UniqueConstraint('user_id', name='uq_team_member_user'),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('team_membership', uselist=False))
+
+    def __repr__(self):
+        return f'<TeamMember user={self.user_id} team={self.team_id}>'

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ team.name }} - {{ _('My Team') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-shield-fill"></i> {{ team.name }}</h1>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('teams.teams_list') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> {{ _('All Teams') }}
+        </a>
+        <form method="POST" action="{{ url_for('teams.leave_team') }}"
+              onsubmit="return confirm('{{ _('Are you sure you want to leave this team?') }}')">
+            <button type="submit" class="btn btn-outline-danger">
+                <i class="bi bi-box-arrow-right"></i> {{ _('Leave Team') }}
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{{ _('Team Info') }}</h5>
+            </div>
+            <div class="card-body">
+                {% if team.description %}
+                <p>{{ team.description }}</p>
+                <hr>
+                {% endif %}
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">{{ _('Captain') }}</dt>
+                    <dd class="col-sm-7">{{ team.captain.username }}</dd>
+                    <dt class="col-sm-5">{{ _('Members') }}</dt>
+                    <dd class="col-sm-7">{{ team.members.count() }}</dd>
+                    <dt class="col-sm-5">{{ _('Created') }}</dt>
+                    <dd class="col-sm-7">{{ team.created_at.strftime('%Y-%m-%d') }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        {% if current_user.id == team.captain_id %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-key-fill"></i> {{ _('Invite Code') }}</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">{{ _('Share this code with others so they can join your team.') }}</p>
+                <div class="d-flex align-items-center gap-2">
+                    <code class="fs-5 fw-bold" id="invite-code">{{ team.invite_code }}</code>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="copyInviteCode()">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-7 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> {{ _('Members') }}</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Username') }}</th>
+                            <th>{{ _('Role') }}</th>
+                            <th>{{ _('Joined') }}</th>
+                            {% if current_user.id == team.captain_id %}
+                            <th></th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in members %}
+                        <tr>
+                            <td>{{ m.user.username }}</td>
+                            <td>
+                                {% if m.user_id == team.captain_id %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-star-fill"></i> {{ _('Captain') }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ _('Member') }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">{{ m.joined_at.strftime('%Y-%m-%d') }}</td>
+                            {% if current_user.id == team.captain_id %}
+                            <td>
+                                {% if m.user_id != team.captain_id %}
+                                <form method="POST"
+                                      action="{{ url_for('teams.kick_member', team_id=team.id, user_id=m.user_id) }}"
+                                      onsubmit="return confirm('{{ _('Remove this member?') }}')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-person-x"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyInviteCode() {
+    const code = document.getElementById('invite-code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        alert('Invite code copied!');
+    });
+}
+</script>
+{% endblock %}
