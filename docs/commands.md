@@ -16,17 +16,13 @@
 ### 首次安装 / First Time Setup
 ```bash
 # 1. 进入项目目录
-cd /Users/mazhang/ai/CTF
+cd Simple-CTF-Platform
 
 # 2. 复制环境配置
 cp .env.example .env
 
-# 3. 编辑配置（重要！）
+# 3. 编辑配置（重要！修改 SECRET_KEY 等）
 nano .env  # 或使用其他编辑器
-
-# 4. 检查部署准备
-chmod +x check_deployment.sh
-./check_deployment.sh
 ```
 
 ### 快速启动 / Quick Start
@@ -202,11 +198,8 @@ flask shell
 
 ### 运行测试 / Run Tests
 ```bash
-# 运行测试脚本
-python test_platform.py
-
-# 检查部署准备
-./check_deployment.sh
+# 运行测试套件
+pytest tests/
 ```
 
 ### 手动测试 / Manual Testing
@@ -430,7 +423,7 @@ docker compose logs postgres
 chmod -R 755 uploads/
 
 # 修复脚本权限
-chmod +x deploy.sh check_deployment.sh
+chmod +x deploy.sh
 ```
 
 ---
@@ -444,11 +437,8 @@ chmod +x deploy.sh check_deployment.sh
 - PostgreSQL: https://www.postgresql.org/docs/
 
 ### 项目文档 / Project Documentation
-- README.md - 项目概述
-- QUICKSTART.md - 快速开始
-- STRUCTURE.md - 项目结构
-
----
-
-**最后更新 / Last Updated**: 2026-01-16  
-**版本 / Version**: 1.0.0
+- [README.md](../README.md) — 项目概述
+- [quickstart.md](quickstart.md) — 快速开始
+- [migrations.md](migrations.md) — 数据库迁移
+- [export-import.md](export-import.md) — 导出 / 导入
+- [CHANGELOG.md](CHANGELOG.md) — 更新日志

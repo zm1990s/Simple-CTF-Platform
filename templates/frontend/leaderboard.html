@@ -122,7 +122,7 @@
                                     <th class="text-center" style="width: 200px; padding: 1.2rem;">{{ _('Last Solve') }}</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="team-leaderboard-body" data-competition-id="{{ competition.id }}">
                                 {% for entry in team_leaderboard %}
                                     <tr class="leaderboard-row {% if loop.index <= 3 %}podium-rank-{{ loop.index }}{% endif %}"
                                         style="transition: all 0.3s ease; cursor: pointer;"
@@ -298,74 +298,112 @@
 
 {% block extra_js %}
 <script>
-    // Auto-refresh leaderboard every 30 seconds if competition is running
+    // Auto-refresh leaderboard every 30 seconds if competition is running.
+    // Refresh BOTH the individual and the team tabs — switching tabs no longer
+    // freezes the data (previously only the individual tbody was updated, so
+    // viewers on the Teams tab saw a stale snapshot from page load).
     {% if competition.is_running() %}
+        function trophyHtml(rank) {
+            if (rank === 1) {
+                return `<div class="trophy-container" style="display: inline-block; position: relative;">
+                    <i class="bi bi-trophy-fill" style="font-size: 2rem; color: #FFD700;"></i>
+                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.9rem; color: #000;">1</span>
+                </div>`;
+            }
+            if (rank === 2) {
+                return `<div class="trophy-container" style="display: inline-block; position: relative;">
+                    <i class="bi bi-trophy-fill" style="font-size: 1.8rem; color: #C0C0C0;"></i>
+                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.85rem; color: #000;">2</span>
+                </div>`;
+            }
+            if (rank === 3) {
+                return `<div class="trophy-container" style="display: inline-block; position: relative;">
+                    <i class="bi bi-trophy-fill" style="font-size: 1.6rem; color: #CD7F32;"></i>
+                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.8rem; color: #000;">3</span>
+                </div>`;
+            }
+            return `<span class="badge bg-secondary" style="font-size: 1rem; padding: 0.5rem 0.8rem;">#${rank}</span>`;
+        }
+        function podiumClass(rank) {
+            return rank <= 3 ? ` podium-rank-${rank}` : '';
+        }
+        function lastSolveCell(ts) {
+            return ts
+                ? `<i class="bi bi-clock-history"></i> ${ts}`
+                : '<span class="text-muted">-</span>';
+        }
+
+        function renderIndividual(tbody, entries) {
+            tbody.innerHTML = entries.map(entry => `
+                <tr class="leaderboard-row${podiumClass(entry.rank)}" style="transition: all 0.3s ease;">
+                    <td class="text-center align-middle" style="padding: 1.2rem;">
+                        <div class="rank-badge">${trophyHtml(entry.rank)}</div>
+                    </td>
+                    <td class="align-middle" style="padding: 1.2rem;">
+                        <strong style="font-size: 1.1rem; color: var(--text-primary);">
+                            <i class="bi bi-person-circle" style="color: var(--cyber-secondary);"></i>
+                            ${entry.username}
+                        </strong>
+                    </td>
+                    <td class="text-center align-middle" style="padding: 1.2rem;">
+                        <span class="badge bg-primary" style="font-size: 1.2rem; padding: 0.6rem 1.2rem;">
+                            <i class="bi bi-star-fill"></i> ${entry.total_points}
+                        </span>
+                    </td>
+                    <td class="text-center align-middle" style="padding: 1.2rem; color: var(--text-secondary); font-size: 0.95rem;">
+                        ${lastSolveCell(entry.last_solve_time)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderTeams(tbody, competitionId, entries) {
+            tbody.innerHTML = entries.map(entry => {
+                const detailUrl = `/leaderboard/${competitionId}/team/${entry.team_id}`;
+                return `
+                    <tr class="leaderboard-row${podiumClass(entry.rank)}"
+                        style="transition: all 0.3s ease; cursor: pointer;"
+                        onclick="location.href='${detailUrl}'">
+                        <td class="text-center align-middle" style="padding: 1.2rem;">
+                            <div class="rank-badge">${trophyHtml(entry.rank)}</div>
+                        </td>
+                        <td class="align-middle" style="padding: 1.2rem;">
+                            <strong style="font-size: 1.1rem; color: var(--text-primary);">
+                                <i class="bi bi-shield-fill" style="color: var(--cyber-secondary);"></i>
+                                ${entry.team_name}
+                            </strong>
+                        </td>
+                        <td class="text-center align-middle" style="padding: 1.2rem;">
+                            <span class="badge bg-secondary"><i class="bi bi-person"></i> ${entry.member_count}</span>
+                        </td>
+                        <td class="text-center align-middle" style="padding: 1.2rem;">
+                            <span class="badge bg-success" style="font-size: 1.2rem; padding: 0.6rem 1.2rem;">
+                                <i class="bi bi-star-fill"></i> ${entry.total_points}
+                            </span>
+                        </td>
+                        <td class="text-center align-middle" style="padding: 1.2rem; color: var(--text-secondary); font-size: 0.95rem;">
+                            ${lastSolveCell(entry.last_solve_time)}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
         setInterval(function() {
             fetch('/api/leaderboard/{{ competition.id }}')
                 .then(response => response.json())
                 .then(data => {
-                    const tbody = document.getElementById('leaderboard-body');
-                    tbody.innerHTML = '';
-                    
-                    data.leaderboard.forEach((entry, index) => {
-                        let trophyHtml = '';
-                        let rowClass = 'leaderboard-row';
-                        
-                        if (entry.rank === 1) {
-                            rowClass += ' podium-rank-1';
-                            trophyHtml = `
-                                <div class="trophy-container" style="display: inline-block; position: relative;">
-                                    <i class="bi bi-trophy-fill" style="font-size: 2rem; color: #FFD700;"></i>
-                                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.9rem; color: #000;">1</span>
-                                </div>
-                            `;
-                        } else if (entry.rank === 2) {
-                            rowClass += ' podium-rank-2';
-                            trophyHtml = `
-                                <div class="trophy-container" style="display: inline-block; position: relative;">
-                                    <i class="bi bi-trophy-fill" style="font-size: 1.8rem; color: #C0C0C0;"></i>
-                                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.85rem; color: #000;">2</span>
-                                </div>
-                            `;
-                        } else if (entry.rank === 3) {
-                            rowClass += ' podium-rank-3';
-                            trophyHtml = `
-                                <div class="trophy-container" style="display: inline-block; position: relative;">
-                                    <i class="bi bi-trophy-fill" style="font-size: 1.6rem; color: #CD7F32;"></i>
-                                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.8rem; color: #000;">3</span>
-                                </div>
-                            `;
-                        } else {
-                            trophyHtml = `<span class="badge bg-secondary" style="font-size: 1rem; padding: 0.5rem 0.8rem;">#${entry.rank}</span>`;
-                        }
-                        
-                        const lastSolveHtml = entry.last_solve_time 
-                            ? `<i class="bi bi-clock-history"></i> ${entry.last_solve_time}`
-                            : '<span class="text-muted">-</span>';
-                        
-                        const row = `
-                            <tr class="${rowClass}" style="transition: all 0.3s ease;">
-                                <td class="text-center align-middle" style="padding: 1.2rem;">
-                                    <div class="rank-badge">${trophyHtml}</div>
-                                </td>
-                                <td class="align-middle" style="padding: 1.2rem;">
-                                    <strong style="font-size: 1.1rem; color: var(--text-primary);">
-                                        <i class="bi bi-person-circle" style="color: var(--cyber-secondary);"></i>
-                                        ${entry.username}
-                                    </strong>
-                                </td>
-                                <td class="text-center align-middle" style="padding: 1.2rem;">
-                                    <span class="badge bg-primary" style="font-size: 1.2rem; padding: 0.6rem 1.2rem;">
-                                        <i class="bi bi-star-fill"></i> ${entry.total_points}
-                                    </span>
-                                </td>
-                                <td class="text-center align-middle" style="padding: 1.2rem; color: var(--text-secondary); font-size: 0.95rem;">
-                                    ${lastSolveHtml}
-                                </td>
-                            </tr>
-                        `;
-                        tbody.innerHTML += row;
-                    });
+                    const indTbody = document.getElementById('leaderboard-body');
+                    if (indTbody && Array.isArray(data.leaderboard)) {
+                        renderIndividual(indTbody, data.leaderboard);
+                    }
+                    const teamTbody = document.getElementById('team-leaderboard-body');
+                    if (teamTbody && Array.isArray(data.team_leaderboard)) {
+                        const cid = teamTbody.dataset.competitionId;
+                        renderTeams(teamTbody, cid, data.team_leaderboard);
+                    }
+                    // Bootstrap tabs are not touched, so the user's current tab
+                    // (Individual or Teams) stays active across refreshes.
                 })
                 .catch(err => console.error('Failed to refresh leaderboard:', err));
         }, 30000);

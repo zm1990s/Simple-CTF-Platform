@@ -8,11 +8,16 @@ A full-featured Capture The Flag (CTF) competition platform built with Python Fl
 
 ## 功能截图 / Screenshots
 
-![alt text](img/1.png)
-![alt text](img/2.png)
-![alt text](img/3.png)
-![alt text](img/4.png)
+![alt text](img/1-1.png)
+![alt text](img/1-2.png)
 
+![alt text](img/1-3.png)
+
+![alt text](img/1-4.png)
+
+![alt text](img/1-5.png)
+
+![alt text](img/1-6.png)
 
 ## 快速开始 / Quick Start
 
@@ -57,24 +62,30 @@ UPLOAD_URL_PREFIX=http://your-public-ip:5000/uploads
 - ✅ 用户注册和登录（邮箱登录）/ User registration and login (email-based)
 - ✅ 查看竞赛和题目 / View competitions and challenges
 - ✅ 在线答题（文本+图片上传）/ Submit answers (text + image uploads)
+- ✅ 查看历史提交内容详情（含已上传图片）/ View full submission details including uploaded images
 - ✅ 实时排行榜 / Real-time leaderboard
 - ✅ 提交历史记录 / Submission history
+- ✅ 组队参赛（创建/加入战队）/ Team participation (create / join teams)
+- ✅ 竞赛 PIN 码验证（私有竞赛准入）/ Competition PIN code verification (private competition access)
 - ✅ 中英文双语支持 / Chinese and English language support
 
 ### 后台功能 / Admin Features
 - ✅ 平台设置（名称、Logo）/ Platform settings (name, logo)
 - ✅ 用户管理 / User management
-- ✅ 竞赛管理（创建、编辑、删除）/ Competition management
+- ✅ 竞赛管理（创建、编辑、删除、PIN 码设置）/ Competition management (incl. PIN code)
 - ✅ 题目管理（Markdown编辑器+预览）/ Challenge management (Markdown editor with preview)
 - ✅ 图片上传和插入 / Image upload and insertion
 - ✅ 提交审核（人工审核）/ Submission review
-- ✅ 外部Hook支持（如Dify工作流）/ External hook support (e.g., Dify workflow)
+- ✅ Dify 判分结果展示作为人工审核参考 / Dify scoring result shown to admins as reference
+- ✅ 外部Hook支持（全局 + 题目级 Dify 工作流）/ External hook support (global + per-challenge Dify workflow)
 
 ### 竞赛功能 / Competition Features
 - ✅ 多竞赛管理 / Multiple competition management
 - ✅ 题目分类和积分 / Challenge categories and points
 - ✅ 动态排行榜（自动刷新）/ Dynamic leaderboard (auto-refresh)
 - ✅ 智能计分：每题只计最高分 / Smart scoring: Only highest score per challenge counts
+- ✅ 组队竞赛与战队榜 / Team-based competition and team leaderboard
+- ✅ PIN 码私有竞赛 / PIN-protected private competitions
 - ✅ 竞赛时间控制 / Competition time control
 
 ## 技术栈 / Tech Stack
@@ -132,9 +143,11 @@ The platform supports automated review and scoring via Dify API after user submi
 
 #### 按题目独立 Dify 配置 / Per-Challenge Dify Override
 
-- 管理员可在每个 Challenge 中单独启用 Dify 配置（完整 Hook URL + API Key）。
+- 管理员可在每个 Challenge 中单独启用 Dify 配置（完整 Hook URL + API Key 及独立工作流）。
 - API Key 会以打码方式保存展示，数据库不直接保存裸明文。
 - 提交时优先使用题目级 Dify 配置；若题目未配置 API Key，则自动回退全局 `DIFY_API_KEY`。
+- Dify 接口调用经过优化：超时与重试更稳健、错误日志更完整、对长答复与图片附件处理更可靠。
+- Dify 返回的判分结果（含 `score` / `feedback`）会同步保留在提交记录中，管理员在审核界面可直接查看，作为人工复核的参考。
 
 题目级 Hook URL 示例：
 
@@ -225,6 +238,32 @@ Dify 工作流需要在 `answer` 字段中返回 JSON 格式的评分结果：
 - 得分：`0`（待审核）
 - 需要管理员在后台手动审核
 
+### 组队功能 / Team Mode
+
+平台支持以战队为单位参赛：
+
+- 用户可以**创建战队**或**通过邀请码 / 战队名加入**已有战队。
+- 战队成员的有效提交会贡献到战队总分，排行榜支持**个人榜**与**战队榜**两种视角。
+- 同一用户在同一竞赛内只能归属一个战队；竞赛进行中可由队长进行成员管理。
+
+The platform supports team-based participation: users can create or join a team, and submissions contribute to a shared team score with both individual and team leaderboards.
+
+### 竞赛 PIN 码 / Competition PIN Code
+
+为支持私有 / 受邀竞赛，平台提供 PIN 码访问控制：
+
+- 管理员在创建或编辑竞赛时可设置 **PIN 码**（留空表示公开竞赛）。
+- 用户进入受 PIN 保护的竞赛前需输入正确 PIN 码，验证通过后会话内不再重复要求。
+- PIN 码错误会被限流并记录，避免暴力枚举。
+
+When a competition is configured with a PIN code, users must enter the correct PIN before viewing challenges or submitting answers. Leaving the PIN empty makes the competition public.
+
+### 提交内容查看 / Submission Detail View
+
+用户可在「我的提交」中**查看每次提交的完整内容**，包括答案文本与已上传的图片附件，方便核对历史答题与申诉。
+
+Users can review the full content of any past submission (answer text + uploaded images) from "My Submissions".
+
 ### 计分规则 / Scoring Rules
 
 #### 多次提交同一题目 / Multiple Submissions for Same Challenge
@@ -271,29 +310,46 @@ Dify 工作流需要在 `answer` 字段中返回 JSON 格式的评分结果：
 ## 目录结构 / Directory Structure
 
 ```
-CTF/
+Simple-CTF-Platform/
 ├── app.py                 # 应用入口 / Application entry
-├── config.py             # 配置文件 / Configuration
-├── models.py             # 数据模型 / Data models
-├── forms.py              # 表单定义 / Form definitions
-├── tasks.py              # Celery任务 / Celery tasks
-├── requirements.txt      # 依赖包 / Dependencies
-├── Dockerfile           # Docker配置 / Docker configuration
-├── docker compose.yml   # Docker Compose配置
-├── k8s-deployment.yaml  # Kubernetes配置
-├── routes/              # 路由模块 / Route modules
-│   ├── auth.py         # 认证路由 / Authentication routes
-│   ├── frontend.py     # 前台路由 / Frontend routes
-│   ├── admin.py        # 后台路由 / Admin routes
-│   └── api.py          # API路由 / API routes
-├── templates/          # 模板文件 / Templates
+├── wsgi.py                # WSGI 入口
+├── config.py              # 配置文件
+├── models.py              # 数据模型
+├── forms.py               # 表单定义
+├── tasks.py               # Celery 任务
+├── dify_secrets.py        # Dify API Key 加解密
+├── init_db.py             # 数据库初始化脚本
+├── requirements.txt
+├── Dockerfile / docker-compose.yml / k8s-deployment.yaml
+├── routes/                # 蓝图层
+│   ├── auth.py            # 认证
+│   ├── frontend.py        # 前台
+│   ├── admin.py           # 后台
+│   ├── api.py             # API
+│   └── teams.py           # 组队
+├── templates/             # Jinja2 模板
 │   ├── base.html
-│   ├── auth/
-│   ├── frontend/
-│   └── admin/
-├── static/             # 静态文件 / Static files
-└── uploads/            # 上传文件 / Uploaded files
+│   ├── auth/  frontend/  admin/  teams/
+├── static/                # 静态资源
+├── tests/                 # 单元 / 集成测试
+├── docs/                  # 补充文档
+│   ├── README.md          # 文档索引
+│   ├── quickstart.md
+│   ├── commands.md
+│   ├── migrations.md
+│   ├── export-import.md
+│   └── CHANGELOG.md
+├── uploads/               # 用户上传
+└── data/                  # 持久化数据卷
 ```
+
+## 文档 / Documentation
+
+- 快速启动：[docs/quickstart.md](docs/quickstart.md)
+- 常用命令：[docs/commands.md](docs/commands.md)
+- 数据库迁移：[docs/migrations.md](docs/migrations.md)
+- 导出 / 导入：[docs/export-import.md](docs/export-import.md)
+- 更新日志：[docs/CHANGELOG.md](docs/CHANGELOG.md)
 
 
 
