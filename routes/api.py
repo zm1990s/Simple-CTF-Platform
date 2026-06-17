@@ -1,5 +1,7 @@
+from collections import defaultdict
+from datetime import datetime
 from flask import Blueprint, jsonify
-from models import Competition, Challenge, Submission
+from models import Competition, Challenge, Submission, Team, TeamMember
 from sqlalchemy import func
 from models import db
 
@@ -56,8 +58,15 @@ def leaderboard_api(competition_id):
     ).all()
     
     from models import User
+
+    # Map user_id → team membership so individual leaderboard can hide team members.
+    user_to_team_id = {m.user_id: m.team_id for m in TeamMember.query.all()}
+
     leaderboard_data = []
-    for rank, (user_id, total_points, last_solve_time) in enumerate(results, 1):
+    rank = 1
+    for (user_id, total_points, last_solve_time) in results:
+        if user_id in user_to_team_id:
+            continue
         user = User.query.get(user_id)
         leaderboard_data.append({
             'rank': rank,
@@ -65,14 +74,60 @@ def leaderboard_api(competition_id):
             'total_points': int(total_points or 0),
             'last_solve_time': last_solve_time.isoformat() if last_solve_time else None
         })
-    
+        rank += 1
+
+    # ── Team leaderboard (mirrors routes/frontend.py:leaderboard) ───────────
+    team_challenge_rows = db.session.query(
+        TeamMember.team_id,
+        Submission.challenge_id,
+        func.max(Submission.points_awarded).label('max_points'),
+        func.max(Submission.reviewed_at).label('last_solve')
+    ).join(
+        Submission, Submission.user_id == TeamMember.user_id
+    ).join(
+        Challenge, Challenge.id == Submission.challenge_id
+    ).filter(
+        Challenge.competition_id == competition_id,
+        Submission.status == 'approved'
+    ).group_by(
+        TeamMember.team_id,
+        Submission.challenge_id
+    ).all()
+
+    team_totals = defaultdict(int)
+    team_last_solve = defaultdict(lambda: None)
+    for row in team_challenge_rows:
+        team_totals[row.team_id] += row.max_points
+        if team_last_solve[row.team_id] is None or (
+            row.last_solve and row.last_solve > team_last_solve[row.team_id]
+        ):
+            team_last_solve[row.team_id] = row.last_solve
+
+    team_leaderboard = []
+    for t_rank, (team_id, total_points) in enumerate(sorted(
+        team_totals.items(),
+        key=lambda x: (-x[1], team_last_solve[x[0]] or datetime.min)
+    ), 1):
+        team = Team.query.get(team_id)
+        if not team:
+            continue
+        team_leaderboard.append({
+            'rank': t_rank,
+            'team_id': team.id,
+            'team_name': team.name,
+            'total_points': int(total_points or 0),
+            'member_count': team.members.count(),
+            'last_solve_time': team_last_solve[team_id].isoformat() if team_last_solve[team_id] else None
+        })
+
     return jsonify({
         'competition': {
             'id': competition.id,
             'name': competition.name,
             'is_running': competition.is_running()
         },
-        'leaderboard': leaderboard_data
+        'leaderboard': leaderboard_data,
+        'team_leaderboard': team_leaderboard
     })
 
 
