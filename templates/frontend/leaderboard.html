@@ -37,8 +37,11 @@
     <div class="tab-pane fade show active" id="individual" role="tabpanel">
         <div class="card leaderboard-card" style="border: 2px solid rgba(0, 170, 255, 0.3); background: var(--bg-secondary);">
             <div class="card-body p-0">
-                {% if leaderboard %}
-                    <div class="table-responsive">
+                <div id="individual-empty" class="alert alert-info text-center m-4 {% if leaderboard %}d-none{% endif %}" style="background: rgba(0, 170, 255, 0.1); border: 2px solid var(--cyber-secondary);">
+                    <i class="bi bi-info-circle" style="font-size: 2rem; color: var(--cyber-secondary);"></i>
+                    <h5 class="mt-3" style="color: var(--cyber-secondary);">{{ _('No submissions yet.') }}</h5>
+                </div>
+                <div id="individual-table-wrap" class="table-responsive {% if not leaderboard %}d-none{% endif %}">
                         <table class="table table-hover mb-0 leaderboard-table">
                             <thead style="background: rgba(178, 232, 255, 0.1); border-bottom: 1px solid var(--cyber-primary);">
                                 <tr>
@@ -95,13 +98,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info text-center m-4" style="background: rgba(0, 170, 255, 0.1); border: 2px solid var(--cyber-secondary);">
-                        <i class="bi bi-info-circle" style="font-size: 2rem; color: var(--cyber-secondary);"></i>
-                        <h5 class="mt-3" style="color: var(--cyber-secondary);">{{ _('No submissions yet.') }}</h5>
-                    </div>
-                {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -110,79 +107,76 @@
     <div class="tab-pane fade" id="teams" role="tabpanel">
         <div class="card leaderboard-card" style="border: 2px solid rgba(0, 170, 255, 0.3); background: var(--bg-secondary);">
             <div class="card-body p-0">
-                {% if team_leaderboard %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 leaderboard-table">
-                            <thead style="background: rgba(178, 232, 255, 0.1); border-bottom: 1px solid var(--cyber-primary);">
-                                <tr>
-                                    <th class="text-center" style="width: 100px; padding: 1.2rem;">{{ _('Rank') }}</th>
-                                    <th style="padding: 1.2rem;">{{ _('Team') }}</th>
-                                    <th class="text-center" style="width: 110px; padding: 1.2rem;">{{ _('Members') }}</th>
-                                    <th class="text-center" style="width: 150px; padding: 1.2rem;">{{ _('Total Points') }}</th>
-                                    <th class="text-center" style="width: 200px; padding: 1.2rem;">{{ _('Last Solve') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody id="team-leaderboard-body" data-competition-id="{{ competition.id }}">
-                                {% for entry in team_leaderboard %}
-                                    <tr class="leaderboard-row {% if loop.index <= 3 %}podium-rank-{{ loop.index }}{% endif %}"
-                                        style="transition: all 0.3s ease; cursor: pointer;"
-                                        onclick="location.href='{{ url_for('frontend.team_leaderboard_detail', competition_id=competition.id, team_id=entry.team.id) }}'">
-                                        <td class="text-center align-middle" style="padding: 1.2rem;">
-                                            <div class="rank-badge">
-                                                {% if entry.rank == 1 %}
-                                                    <div class="trophy-container" style="display: inline-block; position: relative;">
-                                                        <i class="bi bi-trophy-fill" style="font-size: 2rem; color: #FFD700;"></i>
-                                                        <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.9rem; color: #000;">1</span>
-                                                    </div>
-                                                {% elif entry.rank == 2 %}
-                                                    <div class="trophy-container" style="display: inline-block; position: relative;">
-                                                        <i class="bi bi-trophy-fill" style="font-size: 1.8rem; color: #C0C0C0;"></i>
-                                                        <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.85rem; color: #000;">2</span>
-                                                    </div>
-                                                {% elif entry.rank == 3 %}
-                                                    <div class="trophy-container" style="display: inline-block; position: relative;">
-                                                        <i class="bi bi-trophy-fill" style="font-size: 1.6rem; color: #CD7F32;"></i>
-                                                        <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.8rem; color: #000;">3</span>
-                                                    </div>
-                                                {% else %}
-                                                    <span class="badge bg-secondary" style="font-size: 1rem; padding: 0.5rem 0.8rem;">#{{ entry.rank }}</span>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                        <td class="align-middle" style="padding: 1.2rem;">
-                                            <strong style="font-size: 1.1rem; color: var(--text-primary);">
-                                                <i class="bi bi-shield-fill" style="color: var(--cyber-secondary);"></i>
-                                                {{ entry.team.name }}
-                                            </strong>
-                                        </td>
-                                        <td class="text-center align-middle" style="padding: 1.2rem;">
-                                            <span class="badge bg-secondary">
-                                                <i class="bi bi-person"></i> {{ entry.member_count }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center align-middle" style="padding: 1.2rem;">
-                                            <span class="badge bg-success" style="font-size: 1.2rem; padding: 0.6rem 1.2rem;">
-                                                <i class="bi bi-star-fill"></i> {{ entry.total_points }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center align-middle" style="padding: 1.2rem; color: var(--text-secondary); font-size: 0.95rem;">
-                                            {% if entry.last_solve_time %}
-                                                <i class="bi bi-clock-history"></i> {{ entry.last_solve_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                <div id="team-empty" class="alert alert-info text-center m-4 {% if team_leaderboard %}d-none{% endif %}" style="background: rgba(0, 170, 255, 0.1); border: 2px solid var(--cyber-secondary);">
+                    <i class="bi bi-people" style="font-size: 2rem; color: var(--cyber-secondary);"></i>
+                    <h5 class="mt-3" style="color: var(--cyber-secondary);">{{ _('No teams have participated yet.') }}</h5>
+                </div>
+                <div id="team-table-wrap" class="table-responsive {% if not team_leaderboard %}d-none{% endif %}">
+                    <table class="table table-hover mb-0 leaderboard-table">
+                        <thead style="background: rgba(178, 232, 255, 0.1); border-bottom: 1px solid var(--cyber-primary);">
+                            <tr>
+                                <th class="text-center" style="width: 100px; padding: 1.2rem;">{{ _('Rank') }}</th>
+                                <th style="padding: 1.2rem;">{{ _('Team') }}</th>
+                                <th class="text-center" style="width: 110px; padding: 1.2rem;">{{ _('Members') }}</th>
+                                <th class="text-center" style="width: 150px; padding: 1.2rem;">{{ _('Total Points') }}</th>
+                                <th class="text-center" style="width: 200px; padding: 1.2rem;">{{ _('Last Solve') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="team-leaderboard-body" data-competition-id="{{ competition.id }}">
+                            {% for entry in team_leaderboard %}
+                                <tr class="leaderboard-row {% if loop.index <= 3 %}podium-rank-{{ loop.index }}{% endif %}"
+                                    style="transition: all 0.3s ease; cursor: pointer;"
+                                    onclick="location.href='{{ url_for('frontend.team_leaderboard_detail', competition_id=competition.id, team_id=entry.team.id) }}'">
+                                    <td class="text-center align-middle" style="padding: 1.2rem;">
+                                        <div class="rank-badge">
+                                            {% if entry.rank == 1 %}
+                                                <div class="trophy-container" style="display: inline-block; position: relative;">
+                                                    <i class="bi bi-trophy-fill" style="font-size: 2rem; color: #FFD700;"></i>
+                                                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.9rem; color: #000;">1</span>
+                                                </div>
+                                            {% elif entry.rank == 2 %}
+                                                <div class="trophy-container" style="display: inline-block; position: relative;">
+                                                    <i class="bi bi-trophy-fill" style="font-size: 1.8rem; color: #C0C0C0;"></i>
+                                                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.85rem; color: #000;">2</span>
+                                                </div>
+                                            {% elif entry.rank == 3 %}
+                                                <div class="trophy-container" style="display: inline-block; position: relative;">
+                                                    <i class="bi bi-trophy-fill" style="font-size: 1.6rem; color: #CD7F32;"></i>
+                                                    <span class="rank-number" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.8rem; color: #000;">3</span>
+                                                </div>
                                             {% else %}
-                                                <span class="text-muted">-</span>
+                                                <span class="badge bg-secondary" style="font-size: 1rem; padding: 0.5rem 0.8rem;">#{{ entry.rank }}</span>
                                             {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info text-center m-4" style="background: rgba(0, 170, 255, 0.1); border: 2px solid var(--cyber-secondary);">
-                        <i class="bi bi-people" style="font-size: 2rem; color: var(--cyber-secondary);"></i>
-                        <h5 class="mt-3" style="color: var(--cyber-secondary);">{{ _('No teams have participated yet.') }}</h5>
-                    </div>
-                {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="align-middle" style="padding: 1.2rem;">
+                                        <strong style="font-size: 1.1rem; color: var(--text-primary);">
+                                            <i class="bi bi-shield-fill" style="color: var(--cyber-secondary);"></i>
+                                            {{ entry.team.name }}
+                                        </strong>
+                                    </td>
+                                    <td class="text-center align-middle" style="padding: 1.2rem;">
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-person"></i> {{ entry.member_count }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center align-middle" style="padding: 1.2rem;">
+                                        <span class="badge bg-success" style="font-size: 1.2rem; padding: 0.6rem 1.2rem;">
+                                            <i class="bi bi-star-fill"></i> {{ entry.total_points }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center align-middle" style="padding: 1.2rem; color: var(--text-secondary); font-size: 0.95rem;">
+                                        {% if entry.last_solve_time %}
+                                            <i class="bi bi-clock-history"></i> {{ entry.last_solve_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -334,6 +328,7 @@
         }
 
         function renderIndividual(tbody, entries) {
+            if (!tbody) return;
             tbody.innerHTML = entries.map(entry => `
                 <tr class="leaderboard-row${podiumClass(entry.rank)}" style="transition: all 0.3s ease;">
                     <td class="text-center align-middle" style="padding: 1.2rem;">
@@ -358,6 +353,17 @@
         }
 
         function renderTeams(tbody, competitionId, entries) {
+            if (!tbody) return;
+            const emptyDiv = document.getElementById('team-empty');
+            const tableWrap = document.getElementById('team-table-wrap');
+            if (entries.length === 0) {
+                if (emptyDiv) emptyDiv.classList.remove('d-none');
+                if (tableWrap) tableWrap.classList.add('d-none');
+                tbody.innerHTML = '';
+                return;
+            }
+            if (emptyDiv) emptyDiv.classList.add('d-none');
+            if (tableWrap) tableWrap.classList.remove('d-none');
             tbody.innerHTML = entries.map(entry => {
                 const detailUrl = `/leaderboard/${competitionId}/team/${entry.team_id}`;
                 return `
