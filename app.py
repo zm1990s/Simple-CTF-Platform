@@ -50,13 +50,12 @@ def create_app(config_name='default'):
     @app.context_processor
     def inject_translations():
         def _(text):
-            # Get current locale from session
-            locale = session.get('locale', 'zh')
-            # Return translated text or fallback to original
+            locale = get_locale() or app.config['BABEL_DEFAULT_LOCALE']
             if text in translations and locale in translations[text]:
                 return translations[text][locale]
             return text
-        return dict(_=_)
+        current_locale = get_locale() or app.config['BABEL_DEFAULT_LOCALE']
+        return dict(_=_, current_locale=current_locale)
     
     @app.context_processor
     def inject_platform_settings():
