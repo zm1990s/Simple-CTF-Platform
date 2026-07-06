@@ -3,9 +3,10 @@
 #
 # Key points:
 #   - Flask app runs on localhost:5000 with CTF_URL_PREFIX=/ctf
-#   - proxy_set_header X-Script-Name tells ProxyFix the prefix (backup for SCRIPT_NAME)
-#   - The location block passes /ctf/* requests as-is (no rewrite needed)
-#     because Flask's URLPrefixMiddleware sets SCRIPT_NAME=/ctf itself.
+#   - Do NOT add a trailing slash to proxy_pass (proxy_pass http://....:5000;)
+#     so NGINX forwards the full /ctf/... path to Flask as-is.
+#   - URLPrefixMiddleware strips the /ctf prefix from PATH_INFO and sets
+#     SCRIPT_NAME=/ctf so url_for() generates correct prefixed URLs.
 
 server {
     listen 80;
