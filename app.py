@@ -31,6 +31,9 @@ class URLPrefixMiddleware:
 
     def __call__(self, environ, start_response):
         if self.prefix:
+            path_info = environ.get('PATH_INFO', '')
+            if path_info.startswith(self.prefix):
+                environ['PATH_INFO'] = path_info[len(self.prefix):] or '/'
             environ['SCRIPT_NAME'] = self.prefix
         return self.app(environ, start_response)
 
