@@ -53,7 +53,8 @@ services:
       - EXTERNAL_HOOK_ENABLED=${EXTERNAL_HOOK_ENABLED:-false}
       - EXTERNAL_HOOK_URL=${EXTERNAL_HOOK_URL:-}
       - DIFY_API_KEY=${DIFY_API_KEY:-}
-      - UPLOAD_URL_PREFIX=${UPLOAD_URL_PREFIX:-http://localhost:5000/uploads}
+      - CTF_URL_PREFIX=${CTF_URL_PREFIX:-/ctf}
+      - UPLOAD_URL_PREFIX=${UPLOAD_URL_PREFIX:-http://localhost:5000/ctf/uploads}
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,7 +77,8 @@ services:
       - EXTERNAL_HOOK_ENABLED=${EXTERNAL_HOOK_ENABLED:-false}
       - EXTERNAL_HOOK_URL=${EXTERNAL_HOOK_URL:-}
       - DIFY_API_KEY=${DIFY_API_KEY:-}
-      - UPLOAD_URL_PREFIX=${UPLOAD_URL_PREFIX:-http://localhost:5000/uploads}
+      - CTF_URL_PREFIX=${CTF_URL_PREFIX:-/ctf}
+      - UPLOAD_URL_PREFIX=${UPLOAD_URL_PREFIX:-http://localhost:5000/ctf/uploads}
     depends_on:
       - postgres
       - redis
