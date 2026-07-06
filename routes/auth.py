@@ -1,7 +1,17 @@
+from urllib.parse import urlparse, urljoin
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, current_user, login_required
 from models import db, User
 from forms import LoginForm, RegisterForm, ChangePasswordForm
+
+
+def is_safe_redirect(target):
+    """Allow only same-host relative redirects."""
+    if not target:
+        return False
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -56,7 +66,9 @@ def login():
                 return render_template('auth/login.html', form=form)
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('frontend.index'))
+            if next_page and is_safe_redirect(next_page):
+                return redirect(next_page)
+            return redirect(url_for('frontend.index'))
         else:
             flash('Invalid email or password.', 'danger')
     
@@ -76,7 +88,10 @@ def set_locale(locale):
     """Set user locale"""
     if locale in ['en', 'zh']:
         session['locale'] = locale
-    return redirect(request.referrer or url_for('frontend.index'))
+    referrer = request.referrer
+    if referrer and is_safe_redirect(referrer):
+        return redirect(referrer)
+    return redirect(url_for('frontend.index'))
 
 
 @auth_bp.route('/change-password', methods=['GET', 'POST'])
