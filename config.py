@@ -16,6 +16,9 @@ class Config:
     UPLOAD_FOLDER = os.path.join(basedir, os.environ.get('UPLOAD_FOLDER', 'uploads'))
     MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'txt', 'pdf', 'zip'}
+    URL_PREFIX = os.environ.get('CTF_URL_PREFIX', '').rstrip('/')
+    APPLICATION_ROOT = URL_PREFIX or '/'
+    SESSION_COOKIE_PATH = APPLICATION_ROOT
     
     # Platform configuration
     PLATFORM_NAME = os.environ.get('PLATFORM_NAME', 'CTF Platform')

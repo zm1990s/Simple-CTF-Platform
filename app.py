@@ -22,11 +22,25 @@ except Exception as e:
     print(f"Warning: Could not load translations.json: {e}")
 
 
+class URLPrefixMiddleware:
+    """Force SCRIPT_NAME when the app is mounted below a URL prefix."""
+
+    def __init__(self, app, prefix):
+        self.app = app
+        self.prefix = prefix.rstrip('/')
+
+    def __call__(self, environ, start_response):
+        if self.prefix:
+            environ['SCRIPT_NAME'] = self.prefix
+        return self.app(environ, start_response)
+
+
 def create_app(config_name='default'):
     """Application factory"""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+    app.wsgi_app = URLPrefixMiddleware(app.wsgi_app, app.config.get('URL_PREFIX', ''))
     
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
