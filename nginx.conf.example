@@ -1,0 +1,47 @@
+# NGINX reverse proxy configuration for Simple CTF Platform
+# mounted at https://xxx.com/ctf
+#
+# Key points:
+#   - Flask app runs on localhost:5000 with CTF_URL_PREFIX=/ctf
+#   - proxy_set_header X-Script-Name tells ProxyFix the prefix (backup for SCRIPT_NAME)
+#   - The location block passes /ctf/* requests as-is (no rewrite needed)
+#     because Flask's URLPrefixMiddleware sets SCRIPT_NAME=/ctf itself.
+
+server {
+    listen 80;
+    server_name xxx.com;
+
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name xxx.com;
+
+    ssl_certificate     /etc/nginx/ssl/xxx.com.crt;
+    ssl_certificate_key /etc/nginx/ssl/xxx.com.key;
+
+    # (Optional) other site content served at xxx.com/
+    # location / {
+    #     root /var/www/html;
+    # }
+
+    # CTF Platform at /ctf
+    location /ctf {
+        proxy_pass         http://127.0.0.1:5000;
+
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+
+        # File uploads can be large (default 16 MB)
+        client_max_body_size 20M;
+
+        # WebSocket / long-poll support (not currently used, but harmless)
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade    $http_upgrade;
+        proxy_set_header   Connection "upgrade";
+    }
+}

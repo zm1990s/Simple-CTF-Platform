@@ -365,7 +365,7 @@
             if (emptyDiv) emptyDiv.classList.add('d-none');
             if (tableWrap) tableWrap.classList.remove('d-none');
             tbody.innerHTML = entries.map(entry => {
-                const detailUrl = `/leaderboard/${competitionId}/team/${entry.team_id}`;
+                const detailUrl = "{{ url_for('frontend.team_leaderboard_detail', competition_id=competition.id, team_id=0) }}".replace('/0', `/${entry.team_id}`);
                 return `
                     <tr class="leaderboard-row${podiumClass(entry.rank)}"
                         style="transition: all 0.3s ease; cursor: pointer;"
@@ -396,7 +396,7 @@
         }
 
         setInterval(function() {
-            fetch('/api/leaderboard/{{ competition.id }}')
+            fetch('{{ url_for('api.leaderboard_api', competition_id=competition.id) }}')
                 .then(response => response.json())
                 .then(data => {
                     const indTbody = document.getElementById('leaderboard-body');
