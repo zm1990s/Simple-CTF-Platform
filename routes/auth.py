@@ -6,12 +6,17 @@ from forms import LoginForm, RegisterForm, ChangePasswordForm
 
 
 def is_safe_redirect(target):
-    """Allow only same-host relative redirects."""
+    """Allow same-host absolute URLs and all relative paths."""
     if not target:
         return False
-    ref_url = urlparse(request.host_url)
-    test_url = urlparse(urljoin(request.host_url, target))
-    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+    parsed = urlparse(target)
+    # Relative URL (no scheme/netloc) — always safe
+    if not parsed.scheme and not parsed.netloc:
+        return True
+    # Absolute URL — must match the incoming request's host
+    if parsed.scheme not in ('http', 'https'):
+        return False
+    return parsed.netloc == urlparse(request.host_url).netloc
 
 auth_bp = Blueprint('auth', __name__)
 
