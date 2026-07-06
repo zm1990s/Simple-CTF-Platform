@@ -4,6 +4,7 @@ from flask import Flask, session
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_babel import Babel
+from werkzeug.middleware.proxy_fix import ProxyFix
 from config import config
 from models import db, User
 
@@ -25,6 +26,7 @@ def create_app(config_name='default'):
     """Application factory"""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
