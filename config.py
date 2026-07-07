@@ -19,6 +19,9 @@ class Config:
     URL_PREFIX = os.environ.get('CTF_URL_PREFIX', '').rstrip('/')
     APPLICATION_ROOT = URL_PREFIX or '/'
     SESSION_COOKIE_PATH = APPLICATION_ROOT
+    SESSION_COOKIE_NAME = 'ctf_session'
+    REMEMBER_COOKIE_NAME = 'ctf_remember_token'
+    REMEMBER_COOKIE_PATH = APPLICATION_ROOT
     
     # Platform configuration
     PLATFORM_NAME = os.environ.get('PLATFORM_NAME', 'CTF Platform')
